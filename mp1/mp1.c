@@ -17,7 +17,7 @@ int __init mp1_init(void)
    printk(KERN_ALERT "MP1 MODULE LOADING\n");
    #endif
    // Insert your code here ...
-// Hehe   
+// I am modifyingh the code
    
    
    printk(KERN_ALERT "MP1 MODULE LOADED\n");
