@@ -5,7 +5,7 @@
 #include "mp1_given.h"
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Your_NetID");
+MODULE_AUTHOR("dipayan2");
 MODULE_DESCRIPTION("CS-423 MP1");
 
 #define DEBUG 1
@@ -16,6 +16,7 @@ int __init mp1_init(void)
    #ifdef DEBUG
    printk(KERN_ALERT "MP1 MODULE LOADING\n");
    #endif
+   printk(KERN_ALERT "Hello World\n");
    // Insert your code here ...
 // I am modifyingh Last change
    
@@ -30,6 +31,7 @@ void __exit mp1_exit(void)
    #ifdef DEBUG
    printk(KERN_ALERT "MP1 MODULE UNLOADING\n");
    #endif
+   printk(KERN_ALERT "Goodbye\n")
    // Insert your code here ...
    
    
