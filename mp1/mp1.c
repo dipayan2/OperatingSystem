@@ -31,7 +31,7 @@ void __exit mp1_exit(void)
    #ifdef DEBUG
    printk(KERN_ALERT "MP1 MODULE UNLOADING\n");
    #endif
-   printk(KERN_ALERT "Goodbye\n")
+   printk(KERN_ALERT "Goodbye\n");
    // Insert your code here ...
    
    
