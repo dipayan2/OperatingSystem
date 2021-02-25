@@ -16,7 +16,7 @@ MODULE_DESCRIPTION("CS-423 MP1");
 #define DEBUG 1
 
 
-// callsback
+// callback
 static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
    return 1;
 }
@@ -47,6 +47,7 @@ int __init mp1_init(void)
    mp1_dir = proc_mkdir("mp1", NULL);
    // Adding the files
    mp1_file = proc_create("status", 0666, mp1_dir, & mp1_fops);
+   // Checkpoint 1 done
 
 // I am modifyingh Last change
    
