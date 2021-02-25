@@ -27,6 +27,7 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
 
 // Directory Creation
 static struct proc_dir_entry* mp1_dir; // pointer to a new dir
+static struct proc_dir_entry *mp1_file;
 // File ops for the newly minted files in mp1 dir
 static const struct file_operations mp1_fops = {
      .owner	= THIS_MODULE,
