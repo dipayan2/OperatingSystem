@@ -31,7 +31,7 @@ static struct proc_dir_entry *mp1_file;
 // File ops for the newly minted files in mp1 dir
 static const struct file_operations mp1_fops = {
      .owner	= THIS_MODULE,
-     .read = mp1_read
+     .read = mp1_read,
      .write	= mp1_write,
  };
 
