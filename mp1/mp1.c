@@ -13,6 +13,7 @@
 #include <linux/jiffies.h>
 #include <linux/timer.h>
 #include <linux/time.h>
+#include <linux/workqueue.h>
 
 #include "mp1_given.h"
 
@@ -29,9 +30,6 @@ struct my_pid_data{
    int my_id;
    unsigned long cpu_time;
 };
-//timers
-static struct timer_list my_timer;
-
 
 // callback
 static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
@@ -112,9 +110,31 @@ static const struct file_operations mp1_fops = {
  };
 
 
+//Update code for the work function
+static void upDateFunction(struct work_struct ∗work){
+   // Do stuff here
+   printk(KERN_ALERT "This line is printed after 5 seconds.\n");
+   // Ending 
+   kfree((void *) work);
+}
+ // Workqueue functions
+ static struct workqueue_struct ∗my_wq;
+ void setup_work(void){
+    // Create new work
+    struct work_struct *my_work;
+    my_work = (work_struct *) kmalloc(sizeof(work_struct), GFP_KERNEL);
+    if (my_work){
+       INIT_WORK(my_work,upDateFunction); // Attached function to the work
+       queue_work(my_wq, my_work); // Added to queue
+    }
+    // Add it to the queue to execute later
+ }
+
+
  // Timer functions
- void my_timer_callback(unsigned long data) {
-  printk(KERN_ALERT "This line is printed after 5 seconds.\n");
+static struct timer_list my_timer;
+void my_timer_callback(unsigned long data) {
+  setup_work()
   mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 }
 
@@ -137,7 +157,8 @@ int __init mp1_init(void)
    printk(KERN_ALERT "Initializing a module with timer.\n");
    setup_timer(&my_timer, my_timer_callback, 0);
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
-// I am modifyingh Last change
+   // Creating wirk queue
+   my_wq = create_workqueue("mp1q");
    
    
    printk(KERN_ALERT "MP1 MODULE LOADED\n");
@@ -164,12 +185,16 @@ void __exit mp1_exit(void)
 	}
    printk(KERN_INFO "List Freed\n");
 
-   // Removing the files
+
     // Removing the timer 
    printk(KERN_ALERT "removing timer\n");
    del_timer(&my_timer);
 
-   // Removing the directory
+   //Removing the workqueue
+   flush_workqueue( my_wq );
+   destroy_workqueue( my_wq );
+
+   // Removing the directory and files
    remove_proc_entry("status", mp1_dir);
    remove_proc_entry("mp1", NULL);
 
