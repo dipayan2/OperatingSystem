@@ -114,8 +114,7 @@ static const struct file_operations mp1_fops = {
 
 //Update code for the work function
  static struct workqueue_struct *my_wq;
- 
- void upDateFunction(struct work_struct ∗work){
+ static void upDateFunction(struct work_struct *work){
    // Do stuff here
    printk(KERN_ALERT "This line is printed after 5 seconds.\n");
    // Ending 
@@ -123,12 +122,11 @@ static const struct file_operations mp1_fops = {
 }
  void setup_work(void){
     // Create new work
-    struct work_struct *my_work;
-    my_work = (work_struct *) kmalloc(sizeof(work_struct), GFP_KERNEL);
-    if (my_work){
-       INIT_WORK(my_work,upDateFunction); // Attached function to the work
-       queue_work(my_wq, my_work); // Added to queue
-    }
+    struct work_struct my_work;
+   // my_work = (work_struct *) kmalloc(sizeof(work_struct), GFP_KERNEL);
+    INIT_WORK(&my_work, upDateFunction); // Attached function to the work
+    queue_work(my_wq, &my_work); // Added to queue
+    return ;
     // Add it to the queue to execute later
  }
 
