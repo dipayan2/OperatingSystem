@@ -12,6 +12,8 @@
 #include <linux/slab.h> 
 #include <linux/jiffies.h>
 #include <linux/timer.h>
+#include <linux/time.h>
+
 #include "mp1_given.h"
 
 MODULE_LICENSE("GPL");
@@ -113,6 +115,7 @@ static const struct file_operations mp1_fops = {
  // Timer functions
  void my_timer_callback(unsigned long data) {
   printk(KERN_ALERT "This line is printed after 5 seconds.\n");
+  mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 }
 
 
