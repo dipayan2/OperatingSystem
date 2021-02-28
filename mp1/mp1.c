@@ -32,9 +32,15 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
    int copied;
    int len=0;
 
+   if (*data > 0){
+      printk(KERN_INFO "Read offset issue\n");
+      return 0;
+   }
+
    char * buf;
    buf = (char *) kmalloc(count,GFP_KERNEL); 
    if (!buf){
+      printk(KERN_INFO "Unable to allocate buffer!!\n");
        return -ENOMEM;
    }
       
@@ -48,8 +54,7 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
       // Add this entry into the buffer
       len += scnprintf(buf+len,count-len,"%d: %lu\n",entry->my_id,entry->cpu_time);
    }
-   //... put something into the buf, updated copied 
-   //copy_to_user(buffer, buf, copied); 
+
 
    copied = simple_read_from_buffer(buffer,count,data,buf,len);
    kfree(buf);
@@ -57,7 +62,30 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
 }
 static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t count, loff_t *data){
 // implementation goes here... 
-   return 0;
+   if (*data > 0){
+      printk(KERN_INFO "Error in offset of the file\n");
+      return -EFAULT;
+   }
+   int ret,pidx;
+   ret = kstrtoint_from_user(ubuf, count, 10, &pidx);
+   if (ret){
+      printk(KERN_INFO " error in reading the PID\n");
+      return -EFAULT;
+   }
+   if (pidx < 0){
+      return -EFAULT;
+   }
+
+   // Add to list here
+   struct my_pid_data *pid_inp;
+   pid_inp = kmalloc(sizeof(struct my_pid_data *),GFP_KERNEL);
+   pid_inp->my_id = pidx;
+   pid_inp->cpu_time = 0;
+   // Adding the enrty
+   list_add(&pid_inp->list,&test_head);
+   // Finished entry, might have added this in lock
+
+   return count;
 }
 
 // Directory Creation
