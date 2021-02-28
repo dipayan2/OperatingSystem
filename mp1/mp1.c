@@ -111,7 +111,7 @@ static const struct file_operations mp1_fops = {
 
 
  // Timer functions
- void my_timer_callback(struct timer_list *timer) {
+ void my_timer_callback(unsigned long data) {
   printk(KERN_ALERT "This line is printed after 5 seconds.\n");
 }
 
@@ -132,7 +132,7 @@ int __init mp1_init(void)
    // Checkpoint 1 done
    // Creating the timer
    printk(KERN_ALERT "Initializing a module with timer.\n");
-   timer_setup(&my_timer, my_timer_callback, 0);
+   setup_timer(&my_timer, my_timer_callback, 0);
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 // I am modifyingh Last change
    
@@ -163,7 +163,7 @@ void __exit mp1_exit(void)
 
    // Removing the files
     // Removing the timer 
-   printk(KERN_ALERT "Goodbye, cruel world!\n");
+   printk(KERN_ALERT "removing timer\n");
    del_timer(&my_timer);
 
    // Removing the directory
