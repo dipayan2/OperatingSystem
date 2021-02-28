@@ -115,7 +115,7 @@ static void upDateFunction(struct work_struct ∗work){
    // Do stuff here
    printk(KERN_ALERT "This line is printed after 5 seconds.\n");
    // Ending 
-   kfree((void *) work);
+
 }
  // Workqueue functions
  static struct workqueue_struct ∗my_wq;
