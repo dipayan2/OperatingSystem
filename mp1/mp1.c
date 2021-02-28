@@ -9,6 +9,7 @@
 #include <linux/seq_file.h>
 #include <linux/list.h>
 #include <linux/uaccess.h>
+#include <linux/slab.h> 
 #include "mp1_given.h"
 
 MODULE_LICENSE("GPL");
@@ -37,7 +38,7 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
       return 0;
    }
 
-   char * buf;
+   char *buf;
    buf = (char *) kmalloc(count,GFP_KERNEL); 
    if (!buf){
       printk(KERN_INFO "Unable to allocate buffer!!\n");
