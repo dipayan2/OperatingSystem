@@ -148,7 +148,7 @@ void __exit mp1_exit(void)
 		 list_del(pos);
 		 kfree(tmp);
 	}
-   printk(KERN_INFO "List Freed\n")
+   printk(KERN_INFO "List Freed\n");
 
    // Removing the files
 
