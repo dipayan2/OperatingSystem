@@ -68,7 +68,7 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
       return -EFAULT;
    }
    int ret,pidx;
-   ret = kstrtoint_from_user(ubuf, count, 10, &pidx);
+   ret = kstrtoint_from_user(buffer, count, 10, &pidx);
    if (ret){
       printk(KERN_INFO " error in reading the PID\n");
       return -EFAULT;
