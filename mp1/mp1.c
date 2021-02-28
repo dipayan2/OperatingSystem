@@ -134,7 +134,7 @@ static void upDateFunction(struct work_struct ∗work){
  // Timer functions
 static struct timer_list my_timer;
 void my_timer_callback(unsigned long data) {
-  setup_work()
+  setup_work();
   mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 }
 
@@ -157,7 +157,7 @@ int __init mp1_init(void)
    printk(KERN_ALERT "Initializing a module with timer.\n");
    setup_timer(&my_timer, my_timer_callback, 0);
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
-   // Creating wirk queue
+   // Creating work queue
    my_wq = create_workqueue("mp1q");
    
    
