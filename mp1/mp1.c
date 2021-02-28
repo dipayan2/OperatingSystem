@@ -113,9 +113,8 @@ static const struct file_operations mp1_fops = {
 
 
 //Update code for the work function
-
- // Workqueue functions
- static struct workqueue_struct ∗my_wq;
+ static struct workqueue_struct *my_wq;
+ 
  void upDateFunction(struct work_struct ∗work){
    // Do stuff here
    printk(KERN_ALERT "This line is printed after 5 seconds.\n");
