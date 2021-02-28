@@ -10,6 +10,8 @@
 #include <linux/list.h>
 #include <linux/uaccess.h>
 #include <linux/slab.h> 
+#include <linux/jiffies.h>
+#include <linux/timer.h>
 #include "mp1_given.h"
 
 MODULE_LICENSE("GPL");
@@ -25,7 +27,8 @@ struct my_pid_data{
    int my_id;
    unsigned long cpu_time;
 };
-
+//timers
+static struct timer_list my_timer;
 
 
 // callback
@@ -107,6 +110,12 @@ static const struct file_operations mp1_fops = {
  };
 
 
+ // Timer functions
+ void my_timer_callback(struct timer_list *timer) {
+  printk(KERN_ALERT "This line is printed after 5 seconds.\n");
+}
+
+
 // mp1_init - Called when module is loaded
 int __init mp1_init(void)
 {
@@ -121,8 +130,10 @@ int __init mp1_init(void)
    // Adding the files
    mp1_file = proc_create("status", 0666, mp1_dir, & mp1_fops);
    // Checkpoint 1 done
-   // Init the kernel linked list for registration
-
+   // Creating the timer
+   printk(KERN_ALERT "Initializing a module with timer.\n");
+   timer_setup(&my_timer, my_timer_callback, 0);
+   mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 // I am modifyingh Last change
    
    
@@ -151,6 +162,9 @@ void __exit mp1_exit(void)
    printk(KERN_INFO "List Freed\n");
 
    // Removing the files
+    // Removing the timer 
+   printk(KERN_ALERT "Goodbye, cruel world!\n");
+   del_timer(&my_timer);
 
    // Removing the directory
    remove_proc_entry("status", mp1_dir);
