@@ -32,13 +32,17 @@ struct my_pid_data{
 static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
    int copied;
    int len=0;
+   char *buf;
+   // Read the whole list?
+   struct list_head *ptr;
+   struct my_pid_data *entry;
 
    if (*data > 0){
       printk(KERN_INFO "Read offset issue\n");
       return 0;
    }
 
-   char *buf;
+  
    buf = (char *) kmalloc(count,GFP_KERNEL); 
    if (!buf){
       printk(KERN_INFO "Unable to allocate buffer!!\n");
@@ -46,9 +50,7 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
    }
       
    copied = 0;
-   // Read the whole list?
-   struct list_head *ptr;
-   struct my_pid_data *entry;
+   // Reading the list
    list_for_each(ptr,&test_head){
       entry=list_entry(ptr,struct my_pid_data,list);
       printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
@@ -58,16 +60,21 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
 
 
    copied = simple_read_from_buffer(buffer,count,data,buf,len);
+   if (copied < 0){
+      return -EFAULT;
+   }
    kfree(buf);
    return copied ;
 }
 static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t count, loff_t *data){
 // implementation goes here... 
+   int ret,pidx;
+   struct my_pid_data *pid_inp;
    if (*data > 0){
       printk(KERN_INFO "Error in offset of the file\n");
       return -EFAULT;
    }
-   int ret,pidx;
+  
    ret = kstrtoint_from_user(buffer, count, 10, &pidx);
    if (ret){
       printk(KERN_INFO " error in reading the PID\n");
@@ -78,7 +85,7 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    }
 
    // Add to list here
-   struct my_pid_data *pid_inp;
+   
    pid_inp = kmalloc(sizeof(struct my_pid_data *),GFP_KERNEL);
    pid_inp->my_id = pidx;
    pid_inp->cpu_time = 0;
@@ -131,6 +138,18 @@ void __exit mp1_exit(void)
    #endif
    printk(KERN_ALERT "Goodbye\n");
    // Insert your code here ...
+   // Remove the list
+   struct list_head *pos, *q;
+   struct my_pid_data *tmp;
+   list_for_each_safe(pos, q, &test_head){
+
+		 tmp= list_entry(pos, struct my_pid_data, list);
+		 printk(KERN_INFO "Freeing List\n");
+		 list_del(pos);
+		 kfree(tmp);
+	}
+   printk(KERN_INFO "List Freed\n")
+
    // Removing the files
 
    // Removing the directory
