@@ -97,7 +97,6 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    // Adding the enrty
    list_add(&pid_inp->list,&test_head);
    // Finished entry, might have added this in lock
-
    return count;
 }
 
