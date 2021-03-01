@@ -46,10 +46,10 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
    struct my_pid_data *entry;
 
    if (*data > 0){
-      printk(KERN_INFO "Read offset issue\n");
+      printk(KERN_INFO "\nRead offset issue\n");
       return 0;
    }
-   printk(KERN_INFO "Read function called");
+   printk(KERN_INFO "\nRead function callend\n");
   
    buf = (char *) kmalloc(count,GFP_KERNEL); 
    if (!buf){
@@ -84,13 +84,13 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    int ret,pidx;
    struct my_pid_data *pid_inp;
    if (*data > 0){
-      printk(KERN_INFO "Error in offset of the file\n");
+      printk(KERN_INFO "\nError in offset of the file\n");
       return -EFAULT;
    }
   
    ret = kstrtoint_from_user(buffer, count, 10, &pidx);
    if (ret){
-      printk(KERN_INFO " error in reading the PID\n");
+      printk(KERN_INFO "\nerror in reading the PID\n");
       return -EFAULT;
    }
    if (pidx < 0){
@@ -106,7 +106,7 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    spin_lock(&my_lock);
    list_add(&pid_inp->list,&test_head);
    spin_unlock(&my_lock);
-   printk(KERN_INFO "Registered %d in the list", pidx);
+   printk(KERN_INFO "\nRegistered %d in the list\n", pidx);
    // Finished entry, might have added this in lock
    return count;
 }
@@ -141,7 +141,7 @@ static const struct file_operations mp1_fops = {
 		 to_del = get_cpu_use(temp->my_id, &run_tm);
        if (to_del == -1){
           list_del(posv);
-          printk(KERN_INFO "Deleted Pid : %d and cpu_time : %lu\n", temp->my_id, run_tm);
+          printk(KERN_INFO "\nDeleted Pid : %d and cpu_time : %lu\n", temp->my_id, run_tm);
           kfree(temp);
        }else
        {
