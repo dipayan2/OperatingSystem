@@ -15,6 +15,7 @@
 #include <linux/time.h>
 #include <linux/workqueue.h>
 #include <linux/sched.h>
+#include <linux/spinlock.h>
 
 #include "mp1_given.h"
 
@@ -25,7 +26,8 @@ MODULE_DESCRIPTION("CS-423 MP1");
 
 #define DEBUG 1
 //Locking 
-static spinlock_t my_lock = SPIN_LOCK_UNLOCKED;
+//static spinlock_t my_lock = SPIN_LOCK_UNLOCKED;
+DEFINE_SPINLOCK(my_work);
 // defining the linux lined list -- data type
 struct list_head test_head;
 struct my_pid_data{
@@ -132,7 +134,7 @@ static const struct file_operations mp1_fops = {
    list_for_each_safe(posv, qv, &test_head){
 
 		 temp= list_entry(posv, struct my_pid_data, list);
-		 to_del = get_cpu_use(temp->my_id, &run_tm) 
+		 to_del = get_cpu_use(temp->my_id, &run_tm);
        if (to_del == -1){
           list_del(posv);
           kfree(temp);
