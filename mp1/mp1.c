@@ -217,6 +217,7 @@ void __exit mp1_exit(void)
    struct list_head *pos, *q;
    struct my_pid_data *tmp;
    // this is the issue
+   spin_lock(&my_lock);
    if(!list_empty(&test_head)){
          list_for_each_safe(pos, q, &test_head){
 
@@ -226,6 +227,7 @@ void __exit mp1_exit(void)
             kfree(tmp);
          }
     }
+   spin_unlock(&my_lock);
    printk(KERN_INFO "List Freed\n");
 
 
