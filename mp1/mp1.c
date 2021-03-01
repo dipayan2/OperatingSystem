@@ -135,7 +135,7 @@ static const struct file_operations mp1_fops = {
 static struct timer_list my_timer;
 void my_timer_callback(unsigned long data) {
   printk(KERN_ALERT "This line is printed after 5 seconds.\n");
-  //setup_work();
+  setup_work();
   mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 }
 
@@ -155,7 +155,7 @@ int __init mp1_init(void)
    mp1_file = proc_create("status", 0666, mp1_dir, & mp1_fops);
    // Checkpoint 1 done
    // Creating the timer
-   //my_wq = create_workqueue("mp1q");
+   my_wq = create_workqueue("mp1q");
    printk(KERN_ALERT "Initializing a module with timer.\n");
   
    setup_timer(&my_timer, my_timer_callback, 0);
@@ -176,6 +176,10 @@ void __exit mp1_exit(void)
    #endif
    printk(KERN_ALERT "Goodbye\n");
    // Insert your code here ...
+   del_timer(&my_timer);
+   //Removing the workqueue
+   //flush_workqueue( my_wq );
+   destroy_workqueue( my_wq );
    // Remove the list
    struct list_head *pos, *q;
    struct my_pid_data *tmp;
@@ -191,11 +195,9 @@ void __exit mp1_exit(void)
 
     // Removing the timer 
    printk(KERN_ALERT "removing timer\n");
-   del_timer(&my_timer);
+ 
 
-   //Removing the workqueue
-   //flush_workqueue( my_wq );
-   //destroy_workqueue( my_wq );
+
 
    // Removing the directory and files
    remove_proc_entry("status", mp1_dir);
