@@ -98,7 +98,6 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    }
 
    // Add to list here
- 
    pid_inp = (struct my_pid_data *) kmalloc(sizeof(struct my_pid_data),GFP_KERNEL); // need to free this memory
    if (!pid_inp){
       printk(KERN_INFO "Unable to allocate pid_inp memory\n");
