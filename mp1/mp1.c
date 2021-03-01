@@ -120,7 +120,7 @@ static const struct file_operations mp1_fops = {
    // Ending 
 
 }
- void setup_work(void){
+ static void setup_work(void){
     // Create new work
     struct work_struct my_work;
    // my_work = (work_struct *) kmalloc(sizeof(work_struct), GFP_KERNEL);
@@ -134,7 +134,8 @@ static const struct file_operations mp1_fops = {
  // Timer functions
 static struct timer_list my_timer;
 void my_timer_callback(unsigned long data) {
-  setup_work();
+  printk(KERN_ALERT "This line is printed after 5 seconds.\n");
+  //setup_work();
   mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 }
 
@@ -154,12 +155,12 @@ int __init mp1_init(void)
    mp1_file = proc_create("status", 0666, mp1_dir, & mp1_fops);
    // Checkpoint 1 done
    // Creating the timer
-   my_wq = create_workqueue("mp1q");
+   //my_wq = create_workqueue("mp1q");
    printk(KERN_ALERT "Initializing a module with timer.\n");
   
    setup_timer(&my_timer, my_timer_callback, 0);
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
-   // Creating work queue
+
   
    
    
@@ -197,8 +198,8 @@ void __exit mp1_exit(void)
    destroy_workqueue( my_wq );
 
    // Removing the directory and files
-   remove_proc_entry("status", mp1_dir);
-   remove_proc_entry("mp1", NULL);
+   //remove_proc_entry("status", mp1_dir);
+   //remove_proc_entry("mp1", NULL);
 
    printk(KERN_ALERT "MP1 MODULE UNLOADED\n");
 }
