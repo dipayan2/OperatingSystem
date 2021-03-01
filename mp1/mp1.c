@@ -142,6 +142,7 @@ static const struct file_operations mp1_fops = {
 		 to_del = get_cpu_use(temp->my_id, &run_tm);
        if (to_del == -1){
           list_del(posv);
+          printk(KERN_INFO "Deleted Pid : %d \n", temp->my_id);
           kfree(temp);
        }else
        {
