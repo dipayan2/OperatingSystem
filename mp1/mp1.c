@@ -99,13 +99,18 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
 
    // Add to list here
  
-   pid_inp = kmalloc(sizeof(struct my_pid_data *),GFP_KERNEL);
+   pid_inp = (struct my_pid_data *) kmalloc(sizeof(struct my_pid_data *),GFP_KERNEL); // need to free this memory
+   if (!pid_inp){
+      printk(KERN_INFO "Unable to allocate pid_inp memory\n");
+      return -EFAULT;
+   }
    pid_inp->my_id = pidx;
    pid_inp->cpu_time = 0;
    // Adding the enrty
    spin_lock(&my_lock);
    list_add(&pid_inp->list,&test_head);
    spin_unlock(&my_lock);
+
    printk(KERN_INFO "\nRegistered %d in the list\n", pidx);
    // Finished entry, might have added this in lock
    return count;
