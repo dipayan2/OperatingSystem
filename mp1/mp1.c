@@ -158,8 +158,8 @@ int __init mp1_init(void)
    //my_wq = create_workqueue("mp1q");
    printk(KERN_ALERT "Initializing a module with timer.\n");
   
-   //setup_timer(&my_timer, my_timer_callback, 0);
-   //mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
+   setup_timer(&my_timer, my_timer_callback, 0);
+   mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 
   
    
@@ -191,7 +191,7 @@ void __exit mp1_exit(void)
 
     // Removing the timer 
    printk(KERN_ALERT "removing timer\n");
-  // del_timer(&my_timer);
+   del_timer(&my_timer);
 
    //Removing the workqueue
    //flush_workqueue( my_wq );
