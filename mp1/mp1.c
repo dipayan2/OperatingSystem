@@ -42,10 +42,10 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
    struct list_head *ptr;
    struct my_pid_data *entry;
 
-   if (*data > 0){
-      printk(KERN_INFO "Read offset issue\n");
-      return 0;
-   }
+   // if (*data > 0){
+   //    printk(KERN_INFO "Read offset issue\n");
+   //    return 0;
+   // }
 
   
    buf = (char *) kmalloc(count,GFP_KERNEL); 
