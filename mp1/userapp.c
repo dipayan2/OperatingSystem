@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 	sprintf(buffer, "echo %d > /proc/mp1/status", mypid);
 	system(buffer);
 	int i =0;
-	for(i=0;i<1000;i++){
+	for(i=0;i<10000;i++){
 		unsigned long v;
 		v = fib(20);		
 	}
