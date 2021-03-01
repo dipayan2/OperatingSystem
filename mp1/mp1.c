@@ -125,7 +125,7 @@ static const struct file_operations mp1_fops = {
     struct work_struct my_work;
    // my_work = (work_struct *) kmalloc(sizeof(work_struct), GFP_KERNEL);
     INIT_WORK(&my_work, upDateFunction); // Attached function to the work
-    //queue_work(my_wq, &my_work); // Added to queue
+    queue_work(my_wq, &my_work); // Added to queue
     return ;
     // Add it to the queue to execute later
  }
@@ -134,7 +134,7 @@ static const struct file_operations mp1_fops = {
  // Timer functions
 static struct timer_list my_timer;
 void my_timer_callback(unsigned long data) {
-  printk(KERN_ALERT "This line is printed after 5 seconds.\n");
+  //printk(KERN_ALERT "This line is printed after 5 seconds.\n");
   setup_work();
   mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 }
