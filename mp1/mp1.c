@@ -136,7 +136,7 @@ static struct timer_list my_timer;
 void my_timer_callback(unsigned long data) {
   printk(KERN_ALERT "This line is printed after 5 seconds.\n");
   setup_work();
-  //mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
+  mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 }
 
 
