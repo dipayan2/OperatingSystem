@@ -155,7 +155,7 @@ int __init mp1_init(void)
    mp1_file = proc_create("status", 0666, mp1_dir, & mp1_fops);
    // Checkpoint 1 done
    // Creating the timer
-   my_wq = create_workqueue("mp1q");
+   my_wq = create_singlethread_workqueue("mp1q");
    printk(KERN_ALERT "Initializing a module with timer.\n");
   
    setup_timer(&my_timer, my_timer_callback, 0);
