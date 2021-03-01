@@ -194,12 +194,12 @@ void __exit mp1_exit(void)
    del_timer(&my_timer);
 
    //Removing the workqueue
-   flush_workqueue( my_wq );
-   destroy_workqueue( my_wq );
+   //flush_workqueue( my_wq );
+   //destroy_workqueue( my_wq );
 
    // Removing the directory and files
-   //remove_proc_entry("status", mp1_dir);
-   //remove_proc_entry("mp1", NULL);
+   remove_proc_entry("status", mp1_dir);
+   remove_proc_entry("mp1", NULL);
 
    printk(KERN_ALERT "MP1 MODULE UNLOADED\n");
 }
