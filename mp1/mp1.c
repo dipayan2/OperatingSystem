@@ -150,7 +150,7 @@ static const struct file_operations mp1_fops = {
 	}
    spin_unlock(&my_lock);
    // Ending
-   printk(KERN_ALERT "Updated entries after 5 seconds\n"); 
+   //printk(KERN_ALERT "Updated entries after 5 seconds\n"); 
 
 }
  static void setup_work(void){
@@ -159,7 +159,7 @@ static const struct file_operations mp1_fops = {
    // my_work = (work_struct *) kmalloc(sizeof(work_struct), GFP_KERNEL);
     INIT_WORK(&my_work, upDateFunction); // Attached function to the work
     queue_work(my_wq, &my_work); // Added to queue
-    
+
     // Add it to the queue to execute later
  }
 
@@ -219,7 +219,7 @@ void __exit mp1_exit(void)
    list_for_each_safe(pos, q, &test_head){
 
 		 tmp= list_entry(pos, struct my_pid_data, list);
-		 printk(KERN_INFO "Freeing List\n");
+		// printk(KERN_INFO "Freeing List\n");
 		 list_del(pos);
 		 kfree(tmp);
 	}
