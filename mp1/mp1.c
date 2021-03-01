@@ -98,11 +98,12 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    }
 
    // Add to list here
-   spin_lock(&my_lock);
+ 
    pid_inp = kmalloc(sizeof(struct my_pid_data *),GFP_KERNEL);
    pid_inp->my_id = pidx;
    pid_inp->cpu_time = 0;
    // Adding the enrty
+   spin_lock(&my_lock);
    list_add(&pid_inp->list,&test_head);
    spin_unlock(&my_lock);
    printk(KERN_INFO "Registered %d in the list", pidx);
@@ -126,7 +127,7 @@ static const struct file_operations mp1_fops = {
  struct work_struct my_work;
  static void upDateFunction(struct work_struct *work){
    // Do stuff here
-   printk(KERN_ALERT "This line is printed after 5 seconds.\n");
+   
    //Lock the list and keep on doing things
    struct list_head *posv, *qv;
    struct my_pid_data *temp;
@@ -148,7 +149,8 @@ static const struct file_operations mp1_fops = {
        }	 
 	}
    spin_unlock(&my_lock);
-   // Ending 
+   // Ending
+   printk(KERN_ALERT "Updated entries after 5 seconds\n"); 
 
 }
  static void setup_work(void){
