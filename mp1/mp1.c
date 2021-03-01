@@ -59,14 +59,17 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
       
    copied = 0;
    // Reading the list
-   spin_lock(&my_lock);
-   list_for_each(ptr,&test_head){
-      entry=list_entry(ptr,struct my_pid_data,list);
-      //printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
-      // Add this entry into the buffer
-      len += scnprintf(buf+len,count-len,"%d: %lu\n",entry->my_id,entry->cpu_time);
+   if (!list_empty(&test_head)){
+      spin_lock(&my_lock);
+      list_for_each(ptr,&test_head){
+         entry=list_entry(ptr,struct my_pid_data,list);
+         //printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
+         // Add this entry into the buffer
+         len += scnprintf(buf+len,count-len,"%d: %lu\n",entry->my_id,entry->cpu_time);
+      }
+      spin_unlock(&my_lock);
    }
-   spin_unlock(&my_lock);
+
 
 
    copied = simple_read_from_buffer(buffer,count,data,buf,len);
@@ -102,6 +105,7 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    // Adding the enrty
    list_add(&pid_inp->list,&test_head);
    spin_unlock(&my_lock);
+   printk(KERN_INFO "Registered %d in the list", pidx);
    // Finished entry, might have added this in lock
    return count;
 }
