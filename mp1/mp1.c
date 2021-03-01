@@ -108,7 +108,7 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    pid_inp->cpu_time = 0;
    // Adding the enrty
    spin_lock(&my_lock);
-   list_add(&pid_inp->list,&test_head);
+   list_add(&(pid_inp->list),&test_head);
    spin_unlock(&my_lock);
 
    printk(KERN_INFO "\nRegistered %d in the list\n", pidx);
