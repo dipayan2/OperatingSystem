@@ -60,14 +60,14 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
    copied = 0;
    // Reading the list
    if (!list_empty(&test_head)){
-      //spin_lock(&my_lock);
+      spin_lock(&my_lock);
       list_for_each(ptr,&test_head){
          entry=list_entry(ptr,struct my_pid_data,list);
          //printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
          // Add this entry into the buffer
          len += scnprintf(buf+len,count-len,"%d: %lu\n",entry->my_id,entry->cpu_time);
       }
-      //spin_unlock(&my_lock);
+      spin_unlock(&my_lock);
    }
 
 
@@ -135,7 +135,6 @@ static const struct file_operations mp1_fops = {
    int to_del;
 
    spin_lock(&my_lock);
-   // ha ha
    list_for_each_safe(posv, qv, &test_head){
 
 		 temp= list_entry(posv, struct my_pid_data, list);
