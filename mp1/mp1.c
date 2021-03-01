@@ -159,6 +159,7 @@ static const struct file_operations mp1_fops = {
    // my_work = (work_struct *) kmalloc(sizeof(work_struct), GFP_KERNEL);
     INIT_WORK(&my_work, upDateFunction); // Attached function to the work
     queue_work(my_wq, &my_work); // Added to queue
+    
     // Add it to the queue to execute later
  }
 
