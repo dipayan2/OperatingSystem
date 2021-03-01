@@ -49,7 +49,7 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
       printk(KERN_INFO "Read offset issue\n");
       return 0;
    }
-
+   printk(KERN_INFO "Read function called");
   
    buf = (char *) kmalloc(count,GFP_KERNEL); 
    if (!buf){
@@ -60,14 +60,14 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
    copied = 0;
    // Reading the list
    if (!list_empty(&test_head)){
-      spin_lock(&my_lock);
+      //spin_lock(&my_lock);
       list_for_each(ptr,&test_head){
          entry=list_entry(ptr,struct my_pid_data,list);
          //printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
          // Add this entry into the buffer
          len += scnprintf(buf+len,count-len,"%d: %lu\n",entry->my_id,entry->cpu_time);
       }
-      spin_unlock(&my_lock);
+      //spin_unlock(&my_lock);
    }
 
 
