@@ -24,7 +24,8 @@ MODULE_AUTHOR("dipayan2");
 MODULE_DESCRIPTION("CS-423 MP1");
 
 #define DEBUG 1
-
+//Locking 
+static spinlock_t my_lock = SPIN_LOCK_UNLOCKED;
 // defining the linux lined list -- data type
 struct list_head test_head;
 struct my_pid_data{
@@ -56,12 +57,14 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
       
    copied = 0;
    // Reading the list
+   spin_lock(&my_lock);
    list_for_each(ptr,&test_head){
       entry=list_entry(ptr,struct my_pid_data,list);
-      printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
+      //printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
       // Add this entry into the buffer
       len += scnprintf(buf+len,count-len,"%d: %lu\n",entry->my_id,entry->cpu_time);
    }
+   spin_unlock(&my_lock);
 
 
    copied = simple_read_from_buffer(buffer,count,data,buf,len);
@@ -90,12 +93,13 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    }
 
    // Add to list here
-   
+   spin_lock(&my_lock);
    pid_inp = kmalloc(sizeof(struct my_pid_data *),GFP_KERNEL);
    pid_inp->my_id = pidx;
    pid_inp->cpu_time = 0;
    // Adding the enrty
    list_add(&pid_inp->list,&test_head);
+   spin_unlock(&my_lock);
    // Finished entry, might have added this in lock
    return count;
 }
@@ -117,6 +121,27 @@ static const struct file_operations mp1_fops = {
  static void upDateFunction(struct work_struct *work){
    // Do stuff here
    printk(KERN_ALERT "This line is printed after 5 seconds.\n");
+   //Lock the list and keep on doing things
+   struct list_head *posv, *qv;
+   struct my_pid_data *temp;
+   unsigned long run_tm;
+   int to_del;
+
+   spin_lock(&my_lock);
+   // ha ha
+   list_for_each_safe(posv, qv, &test_head){
+
+		 temp= list_entry(posv, struct my_pid_data, list);
+		 to_del = get_cpu_use(temp->my_id, &run_tm) 
+       if (to_del == -1){
+          list_del(posv);
+          kfree(temp);
+       }else
+       {
+          temp->cpu_time = run_tm;
+       }	 
+	}
+   spin_unlock(&my_lock);
    // Ending 
 
 }
