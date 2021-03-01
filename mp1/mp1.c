@@ -141,7 +141,7 @@ static const struct file_operations mp1_fops = {
 		 to_del = get_cpu_use(temp->my_id, &run_tm);
        if (to_del == -1){
           list_del(posv);
-          printk(KERN_INFO "\nDeleted Pid : %d and cpu_time : %lu\n", temp->my_id, run_tm);
+          printk(KERN_INFO "\nDeleted Pid : %d and cpu_time\n", temp->my_id);
           kfree(temp);
        }else
        {
@@ -216,13 +216,16 @@ void __exit mp1_exit(void)
    // Remove the list
    struct list_head *pos, *q;
    struct my_pid_data *tmp;
-   list_for_each_safe(pos, q, &test_head){
+   // this is the issue
+   if(!list_empty(&test_head)){
+         list_for_each_safe(pos, q, &test_head){
 
-		 tmp= list_entry(pos, struct my_pid_data, list);
-		// printk(KERN_INFO "Freeing List\n");
-		 list_del(pos);
-		 kfree(tmp);
-	}
+            tmp= list_entry(pos, struct my_pid_data, list);
+            // printk(KERN_INFO "Freeing List\n");
+            list_del(pos);
+            kfree(tmp);
+         }
+    }
    printk(KERN_INFO "List Freed\n");
 
 
