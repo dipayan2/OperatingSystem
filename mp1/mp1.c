@@ -27,7 +27,7 @@ MODULE_DESCRIPTION("CS-423 MP1");
 #define DEBUG 1
 //Locking 
 //static spinlock_t my_lock = SPIN_LOCK_UNLOCKED;
-DEFINE_SPINLOCK(my_work);
+static DEFINE_SPINLOCK(my_lock);
 // defining the linux lined list -- data type
 struct list_head test_head;
 struct my_pid_data{
