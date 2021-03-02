@@ -26,3 +26,12 @@
             Inside the interrupt handler, **my_timer_callback** : *setup_work* function, initializes a work of updating the list and adds it to the workqueue. And then modify the timer for another 5 second.
    ##  Updating the Linked List (The queued work)
             The queued work, calls the **upDateFunction**, which iterates over the linked list *test_head*, and either updates or deletes the entry based on the output of the **get_cpu_use**, function. The updation is done under a spin lock, to prevent any inconsistency in the list, if other functions are called.
+# UserApp:
+    I created an application , which register to proc and calculate fibonnaci for 1000 times
+   ## Compiling and Running
+        ~$gcc -o userapp userapp.c
+        ~$./userapp <Fib Number>
+   ## Registration:
+        This code , registers to */proc/mp1/status*, using system call for 'echo PID > /proc/mp1/status'
+        
+
