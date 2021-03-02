@@ -25,10 +25,12 @@ MODULE_AUTHOR("dipayan2");
 MODULE_DESCRIPTION("CS-423 MP1");
 
 #define DEBUG 1
-//Locking 
-//static spinlock_t my_lock = SPIN_LOCK_UNLOCKED;
+/* LOCKING VARIABLE*/
 static DEFINE_SPINLOCK(my_lock);
-// defining the linux lined list -- data type
+
+/**
+ * LINKED LIST DATA STRUCTURE DEFINED
+**/
 struct list_head test_head;
 struct my_pid_data{
    struct list_head list;
@@ -36,29 +38,35 @@ struct my_pid_data{
    unsigned long cpu_time;
 };
 
-// callback
-static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
-   int copied;
-   int len=0;
-   char *buf;
-   // Read the whole list?
-   struct list_head *ptr;
-   struct my_pid_data *entry;
+/**
+ * CALLBACKS FOR THE PROCFS FILE SYSTEM
+ **/
 
+/**
+* READ : To send data back to the process
+**/
+static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
+   // Data declaration
+   int copied;                // Return Value
+   int len=0;                 // How much data is read
+   char *buf;                 // Kernel buffer to read data
+   struct list_head *ptr;     // Kernel Linked List 
+   struct my_pid_data *entry; // Kernel Linked List
+   // Checking if the offset is correct
    if (*data > 0){
       printk(KERN_INFO "\nRead offset issue\n");
       return 0;
    }
-   printk(KERN_INFO "\nRead function callend\n");
+   printk(KERN_INFO "\nRead function called\n");
   
-   buf = (char *) kmalloc(count,GFP_KERNEL); 
+   buf = (char *) kmalloc(count,GFP_KERNEL);    // Allocating kernel memory and checking if properly allocated
    if (!buf){
       printk(KERN_INFO "Unable to allocate buffer!!\n");
        return -ENOMEM;
    }
       
    copied = 0;
-   // Reading the list
+   // Checking id list is empty otherwise, acquiring the lock and iterationg over and writing list values into the buffer.
    if (!list_empty(&test_head)){
       spin_lock(&my_lock);
       list_for_each(ptr,&test_head){
@@ -71,7 +79,7 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
    }
 
 
-
+   // Sending data to user buffer from kernel buffer
    copied = simple_read_from_buffer(buffer,count,data,buf,len);
    if (copied < 0){
       return -EFAULT;
@@ -79,15 +87,20 @@ static ssize_t mp1_read (struct file *file, char __user *buffer, size_t count, l
    kfree(buf);
    return copied ;
 }
+
+/**
+* WRITE : To send data(PID) from process to kernel
+**/
 static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t count, loff_t *data){
-// implementation goes here... 
+
    int ret,pidx;
    struct my_pid_data *pid_inp;
+   // Checking for input offset
    if (*data > 0){
       printk(KERN_INFO "\nError in offset of the file\n");
       return -EFAULT;
    }
-  
+   // Reading data from user space and converting it to int
    ret = kstrtoint_from_user(buffer, count, 10, &pidx);
    if (ret){
       printk(KERN_INFO "\nerror in reading the PID\n");
@@ -97,7 +110,7 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
       return -EFAULT;
    }
 
-   // Add to list here
+   // Initializing a node for PID and its cpu_time
    pid_inp = (struct my_pid_data *) kmalloc(sizeof(struct my_pid_data),GFP_KERNEL); // need to free this memory
    if (!pid_inp){
       printk(KERN_INFO "Unable to allocate pid_inp memory\n");
@@ -105,7 +118,7 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    }
    pid_inp->my_id = pidx;
    pid_inp->cpu_time = 0;
-   // Adding the enrty
+   // Adding the enrty to kernel linked list
    spin_lock(&my_lock);
    list_add(&(pid_inp->list),&test_head);
    spin_unlock(&my_lock);
@@ -115,8 +128,10 @@ static ssize_t mp1_write (struct file *file, const char __user *buffer, size_t c
    return count;
 }
 
-// Directory Creation
-static struct proc_dir_entry* mp1_dir; // pointer to a new dir
+/**
+ * Proc Fs data structure 
+ **/
+static struct proc_dir_entry* mp1_dir;    // pointer to a new dir
 static struct proc_dir_entry *mp1_file;
 // File ops for the newly minted files in mp1 dir
 static const struct file_operations mp1_fops = {
@@ -126,18 +141,25 @@ static const struct file_operations mp1_fops = {
  };
 
 
-//Update code for the work function
+/**
+ *  
+ * WORK QUEUE data structure and relevant functions
+ * 
+ * **/
+
  static struct workqueue_struct *my_wq;
  struct work_struct my_work;
- static void upDateFunction(struct work_struct *work){
-   // Do stuff here
+
+ /**
+  * Function called from the Work Queue to modify the kernel linked list
+  * **/
+ static void upDateFunction(struct work_struct *work){ 
    
-   //Lock the list and keep on doing things
    struct list_head *posv, *qv;
    struct my_pid_data *temp;
    unsigned long run_tm;
    int to_del;
-
+   //Acquire a lock and then update or delete nodes from the linked list
    spin_lock(&my_lock);
    list_for_each_safe(posv, qv, &test_head){
 
@@ -153,12 +175,15 @@ static const struct file_operations mp1_fops = {
        }	 
 	}
    spin_unlock(&my_lock);
-   // Ending
+   // Removed lock
    //printk(KERN_ALERT "Updated entries after 5 seconds\n"); 
 
 }
+
+/**
+ * Sets up the work with a function, and adds the work to the workqueue
+ * **/
  static void setup_work(void){
-    // Create new work
    
    // my_work = (work_struct *) kmalloc(sizeof(work_struct), GFP_KERNEL);
     INIT_WORK(&my_work, upDateFunction); // Attached function to the work
@@ -168,15 +193,24 @@ static const struct file_operations mp1_fops = {
  }
 
 
- // Timer functions
+/**
+ * 
+ * KERNEL TIMER 
+ * 
+ * **/
 static struct timer_list my_timer;
+/***
+ * Interrupt Handler
+*/
 void my_timer_callback(unsigned long data) {
   //printk(KERN_ALERT "This line is printed after 5 seconds.\n");
   setup_work();
-  mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
+  mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000)); // This function ensures that timer is called again in 5 second
 }
 
-
+/**
+ * Module Load and Unloading codes
+ * **/
 // mp1_init - Called when module is loaded
 int __init mp1_init(void)
 {
@@ -191,10 +225,10 @@ int __init mp1_init(void)
    // Adding the files
    mp1_file = proc_create("status", 0666, mp1_dir, & mp1_fops);
    // Checkpoint 1 done
-   // Creating the timer
+   // Setup Work Queue
    my_wq = create_workqueue("mp1q");
    printk(KERN_ALERT "Initializing a module with timer.\n");
-  
+   // Set up the timer
    setup_timer(&my_timer, my_timer_callback, 0);
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 
@@ -212,7 +246,7 @@ void __exit mp1_exit(void)
    printk(KERN_ALERT "MP1 MODULE UNLOADING\n");
    #endif
    printk(KERN_ALERT "Goodbye\n");
-   // Insert your code here ...
+   // Removing the timer
    del_timer(&my_timer);
    //Removing the workqueue
    flush_workqueue( my_wq );
