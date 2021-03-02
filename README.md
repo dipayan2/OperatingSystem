@@ -1,7 +1,8 @@
 # Kernel Module Code :
    ## How to run :
-        1. ~$ make
-        2. ~$ sudo insmod mp1.ko
+        1. ~$ cd mp1/
+        2. ~$ make
+        3. ~$ sudo insmod mp1.ko
    ## To check for process times :
         ~$ cat /proc/mp1/status
    ## To remove the module
