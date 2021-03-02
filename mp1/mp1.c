@@ -232,9 +232,6 @@ int __init mp1_init(void)
    setup_timer(&my_timer, my_timer_callback, 0);
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 
-  
-   
-   
    printk(KERN_ALERT "MP1 MODULE LOADED\n");
    return 0;   
 }
@@ -254,7 +251,7 @@ void __exit mp1_exit(void)
    // Remove the list
    struct list_head *pos, *q;
    struct my_pid_data *tmp;
-   // this is the issue
+
    spin_lock(&my_lock);
    if(!list_empty(&test_head)){
          list_for_each_safe(pos, q, &test_head){
@@ -268,13 +265,9 @@ void __exit mp1_exit(void)
    spin_unlock(&my_lock);
    printk(KERN_INFO "List Freed\n");
 
-
     // Removing the timer 
    printk(KERN_ALERT "removing timer\n");
  
-
-
-
    // Removing the directory and files
    remove_proc_entry("status", mp1_dir);
    remove_proc_entry("mp1", NULL);
