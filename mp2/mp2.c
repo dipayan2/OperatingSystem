@@ -61,7 +61,7 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
         printk(KERN_INFO "\nerror in reading the PID\n");
         return -EFAULT;
     }
-    printk(KERN_INFO "%s\n",kbuf);
+    printk(KERN_ALERT "%s\n",kbuf);
     // use strsep
     
     kfree(kbuf);
@@ -105,14 +105,14 @@ int __init mp2_init(void)
 //    setup_timer(&my_timer, my_timer_callback, 0);
 //    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 
-   printk(KERN_ALERT "MP1 MODULE LOADED\n");
+   printk(KERN_ALERT "MP2 MODULE LOADED\n");
    return 0;   
 }
 
 void __exit mp2_exit(void)
 {
    #ifdef DEBUG
-   printk(KERN_ALERT "MP1 MODULE UNLOADING\n");
+   printk(KERN_ALERT "MP2 MODULE UNLOADING\n");
    #endif
    printk(KERN_ALERT "Goodbye\n");
    // Removing the timer
@@ -144,7 +144,7 @@ void __exit mp2_exit(void)
    remove_proc_entry("status", mp2_dir);
    remove_proc_entry("mp2", NULL);
 
-   printk(KERN_ALERT "MP1 MODULE UNLOADED\n");
+   printk(KERN_ALERT "MP2 MODULE UNLOADED\n");
 }
 
 // Loading and unloading the kernel modules
