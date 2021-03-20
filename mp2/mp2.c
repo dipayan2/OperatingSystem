@@ -38,6 +38,40 @@ struct mp2_task_struct {
   enum task_state state;
 };
 
+
+
+ /**
+  * 
+  * READ and WRITE API for this proc/stat
+  * 
+  * **/
+ // frin user to kernel
+static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t count, loff_t *data){
+    long ret;
+    int pidx;
+    char *kbuf; // buffer where we will read the data
+    if (*data > 0){
+        printk(KERN_INFO "\nError in offset of the file\n");
+        return -EFAULT;
+    }
+    // Define a buffer for the string
+    kbuf = (char*) kmalloc(count,GFP_KERNEL); 
+    ret = strncpy_from_user(kbuf, buffer, count);
+    if (ret == -EFAULT){
+        printk(KERN_INFO "\nerror in reading the PID\n");
+        return -EFAULT;
+    }
+    printk(KERN_INFO "%s\n",kbuf);
+    // use strsep
+    
+    kfree(kbuf);
+    return ret;
+}
+
+// kernel to proc
+static ssize_t mp2_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
+    return 0;
+}
 /**
  * Proc Fs data structure 
  **/
@@ -49,7 +83,6 @@ static const struct file_operations mp2_fops = {
      .read = mp2_read,
      .write	= mp2_write,
  };
-
 
 // Init and exit code for mp2
 int __init mp2_init(void)
@@ -63,7 +96,7 @@ int __init mp2_init(void)
 //    // Created the directory
    mp2_dir = proc_mkdir("mp2", NULL);
    // Adding the files
-   mp2_file = proc_create("status", 0666, mp2_dir, & mp2_fops);
+   mp2_file = proc_create("status", 0666, mp2_dir, &mp2_fops);
 //    // Checkpoint 1 done
 //    // Setup Work Queue
 //    my_wq = create_workqueue("mp1q");
