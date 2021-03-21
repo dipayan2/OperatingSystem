@@ -70,23 +70,29 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
     idx = 0;
     while( (token = strsep(&kbuf,",")) != NULL ){
          if (idx == 0){
+            // ignore
          }
          else if (idx == 1){
             action = *token;
+            printk(KERN_ALERT "This value is %c \n",action);
          }
          else{
             if (action == 'R'){
                if (idx <= 4){
-                  kstrtol(token,10,&readVal[idx-2]);
-                  printk(KERN_ALERT "This number is %ld\n",readVal[idx-2]);
+                  if(kstrtol(token,10,&readVal[idx-2])){
+                     printk(KERN_ALERT "This number is %ld\n",readVal[idx-2]);
+                  }
+                  
                }
                else{
                   break;
                }
             }
             else if (action == 'Y' || action == 'D'){
-                kstrtol(token,10,&readVal[idx-2]);
-                printk(KERN_ALERT "This number is %ld\n",readVal[idx-2]);
+                if(kstrtol(token,10,&readVal[idx-2])){
+                   printk(KERN_ALERT "This number is %ld\n",readVal[idx-2]);
+                }
+                
                 break;
             }
          }
