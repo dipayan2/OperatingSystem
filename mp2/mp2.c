@@ -79,7 +79,7 @@ void handleRegistration(char *kbuf){
          }
          else if (idx <= 3){
             removeLeadSpace(&token);
-            printk(KERN_ALERT "The token : %s\n",token);
+            //printk(KERN_ALERT "The token : %s\n",token);
             value = simple_strtol(token, &endptr, 10);
             if (value == 0 && endptr == token){
                printk(KERN_ALERT "Error in long conversion");
@@ -135,7 +135,7 @@ void handleYield(char *kbuf){
       }
       else if (idx <= 1){
          removeLeadSpace(&token);
-         printk(KERN_ALERT "The token : %s\n",token);
+         //printk(KERN_ALERT "The token : %s\n",token);
          value = simple_strtol(token, &endptr, 10);
          if (value == 0 && endptr == token){
             printk(KERN_ALERT "Error in long conversion");
@@ -171,7 +171,7 @@ void handleDeReg(char *kbuf){
       }
       else if (idx <= 1){
          removeLeadSpace(&token);
-         printk(KERN_ALERT "The token : %s\n",token);
+         //printk(KERN_ALERT "The token : %s\n",token);
          value = simple_strtol(token, &endptr, 10);
          if (value == 0 && endptr == token){
             printk(KERN_ALERT "Error in long conversion");
