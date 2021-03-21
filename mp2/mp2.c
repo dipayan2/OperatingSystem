@@ -49,9 +49,11 @@ struct mp2_task_struct {
  // frin user to kernel
 static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t count, loff_t *data){
     long ret;
-    int pidx;
+    int pidx, idx;
     char *kbuf; // buffer where we will read the data
     char* token;
+    long readVal[5];
+    char action;
 
     if (*data > 0){
         printk(KERN_INFO "\nError in offset of the file\n");
@@ -65,7 +67,30 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
         return -EFAULT;
     }
     printk(KERN_ALERT "%s\n",kbuf);
+    idx = 0;
     while( (token = strsep(&kbuf,",")) != NULL ){
+         if (idx == 0){
+         }
+         else if (idx == 1){
+            action = *token;
+         }
+         else{
+            if (action == 'R'){
+               if (idx <= 4){
+                  kstrtol(token,10,&readVal[idx-2]);
+                  printk(KERN_ALERT "This number is %d\n",readVal[idx-2]);
+               }
+               else{
+                  break;
+               }
+            }
+            else if (action == 'Y' || action == 'D'){
+                kstrtol(token,10,&readVal[idx-2]);
+                printk(KERN_ALERT "This number is %d\n",readVal[idx-2]);
+                break;
+            }
+         }
+         idx += 1;
          printk(KERN_ALERT "%s\n",token);
     }
         
