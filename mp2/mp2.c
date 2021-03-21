@@ -69,10 +69,7 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
     printk(KERN_ALERT "%s\n",kbuf);
     idx = 0;
     while( (token = strsep(&kbuf,",")) != NULL ){
-         if (idx == 0){
-            // ignore
-         }
-         else if (idx == 1){
+      if (idx == 0){
             action = *token;
             printk(KERN_ALERT "This value is %c \n",action);
          }
