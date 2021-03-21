@@ -91,7 +91,7 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
             }
          }
          idx += 1;
-         printk(KERN_ALERT "%s\n",token);
+         //printk(KERN_ALERT "%s\n",token);
     }
         
 
