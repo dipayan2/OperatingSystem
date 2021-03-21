@@ -66,7 +66,7 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
     }
     printk(KERN_ALERT "%s\n",kbuf);
     while( (token = strsep(&kbuf,",")) != NULL ){
-         printf("%s\n",token);
+         printk(KERN_ALERT "%s\n",token);
     }
         
 
