@@ -51,6 +51,100 @@ void removeLeadSpace(char** ptr){
    return;
 }
 
+void handleRegistration(char *kbuf){
+   int idx = 0;
+   char* token;
+   long readVal[5];
+   char action;
+   char *endptr;
+   long value;
+   while( (token = strsep(&kbuf,",")) != NULL ){
+         if (idx == 0){
+            action = *token;
+            printk(KERN_ALERT "This value is %c \n",action);
+         }
+         else if (idx <= 3){
+            removeLeadSpace(&token);
+            printk(KERN_ALERT "The token : %s\n",token);
+            value = simple_strtol(token, &endptr, 10);
+            if (value == 0 && endptr == token){
+               printk(KERN_ALERT "Error in long conversion");
+            } 
+            else{
+               printk(KERN_ALERT "The value is %ld\n", value);
+               readVal[idx-1] = value;
+            }
+            
+         }
+      idx += 1;
+   } // read all the data
+
+   // Do the work of registration
+   
+}
+
+void handleYield(char *kbuf){
+   int idx = 0;
+   char* token;
+   long t_pid;
+   char action;
+   char *endptr;
+   long value;
+   while( (token = strsep(&kbuf,",")) != NULL ){
+      if (idx == 0){
+         action = *token;
+         printk(KERN_ALERT "This value is %c \n",action);
+      }
+      else if (idx <= 1){
+         removeLeadSpace(&token);
+         printk(KERN_ALERT "The token : %s\n",token);
+         value = simple_strtol(token, &endptr, 10);
+         if (value == 0 && endptr == token){
+            printk(KERN_ALERT "Error in long conversion");
+         } 
+         else{
+            printk(KERN_ALERT "The value is %ld\n", value);
+            t_pid = value;
+         }
+         
+      }
+      idx += 1;
+   } // read all the data
+
+   // Do work of Yield
+}
+
+void handleDeReg(char *kbuf){
+   int idx = 0;
+   char* token;
+   long t_pid;
+   char action;
+   char *endptr;
+   long value;
+   while( (token = strsep(&kbuf,",")) != NULL ){
+      if (idx == 0){
+         action = *token;
+         printk(KERN_ALERT "This value is %c \n",action);
+      }
+      else if (idx <= 1){
+         removeLeadSpace(&token);
+         printk(KERN_ALERT "The token : %s\n",token);
+         value = simple_strtol(token, &endptr, 10);
+         if (value == 0 && endptr == token){
+            printk(KERN_ALERT "Error in long conversion");
+         } 
+         else{
+            printk(KERN_ALERT "The value is %ld\n", value);
+            t_pid = value;
+         }
+         
+      }
+      idx += 1;
+   } // read all the data
+
+   // Do work of Yield
+}
+
  /**
   * 
   * READ and WRITE API for this proc/stat
@@ -59,13 +153,12 @@ void removeLeadSpace(char** ptr){
  // frin user to kernel
 static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t count, loff_t *data){
     long ret;
-    int pidx, idx;
+    int pidx;
     char *kbuf; // buffer where we will read the data
-    char* token;
-    long readVal[5];
-    char action;
-    char *endptr;
-    long value;
+    
+    //long readVal[5];
+    //char action;
+
 
     if (*data > 0){
         printk(KERN_INFO "\nError in offset of the file\n");
@@ -79,51 +172,60 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
         return -EFAULT;
     }
     printk(KERN_ALERT "%s\n",kbuf);
-    idx = 0;
-    while( (token = strsep(&kbuf,",")) != NULL ){
-      if (idx == 0){
-            action = *token;
-            printk(KERN_ALERT "This value is %c \n",action);
-         }
-         else{
-            if (action == 'R'){
-               if (idx <= 3){
-                  removeLeadSpace(&token);
-                  printk(KERN_ALERT "The token : %s\n",token);
-                  value = simple_strtol(token, &endptr, 10);
-                  if (value == 0 && endptr == token){
-                     printk(KERN_ALERT "Error in long conversion");
-                  } 
-                  else{
-                     printk(KERN_ALERT "The value is %ld\n", value);
-                     readVal[idx-1] = value;
-                  }
+    if (kbuf[0]=='R'){
+       handleRegistration(kbuf);
+    } 
+    else if(kbuf[0]=='Y'){
+       handleYield(kbuf);
+    }
+    else if(kbuf[0]=='D'){
+       handleDeReg(kbuf);
+    }
+    //idx = 0;
+   //  while( (token = strsep(&kbuf,",")) != NULL ){
+   //    if (idx == 0){
+   //          action = *token;
+   //          printk(KERN_ALERT "This value is %c \n",action);
+   //       }
+   //       else{
+   //          if (action == 'R'){
+   //             if (idx <= 3){
+   //                removeLeadSpace(&token);
+   //                printk(KERN_ALERT "The token : %s\n",token);
+   //                value = simple_strtol(token, &endptr, 10);
+   //                if (value == 0 && endptr == token){
+   //                   printk(KERN_ALERT "Error in long conversion");
+   //                } 
+   //                else{
+   //                   printk(KERN_ALERT "The value is %ld\n", value);
+   //                   readVal[idx-1] = value;
+   //                }
 
                   
-               }
-               else{
-                  break;
-               }
-            }
-            else if (action == 'Y' || action == 'D'){
+   //             }
+   //             else{
+   //                break;
+   //             }
+   //          }
+   //          else if (action == 'Y' || action == 'D'){
         
-               removeLeadSpace(&token);
-               printk(KERN_ALERT "The token : %s\n",token);
-               value = simple_strtol(token, &endptr, 10);
-               if (value == 0 && endptr == token){
-                  printk(KERN_ALERT "Error in long conversion");
-               } 
-               else{
-                  printk(KERN_ALERT "The value is %ld\n", value);
-                  readVal[idx-1] = value;
-               }
+   //             removeLeadSpace(&token);
+   //             printk(KERN_ALERT "The token : %s\n",token);
+   //             value = simple_strtol(token, &endptr, 10);
+   //             if (value == 0 && endptr == token){
+   //                printk(KERN_ALERT "Error in long conversion");
+   //             } 
+   //             else{
+   //                printk(KERN_ALERT "The value is %ld\n", value);
+   //                readVal[idx-1] = value;
+   //             }
                 
-               break;
-            }
-         }
-         idx += 1;
-         //printk(KERN_ALERT "%s\n",token);
-    }
+   //             break;
+   //          }
+   //       }
+   //       idx += 1;
+   //       //printk(KERN_ALERT "%s\n",token);
+   //  }
         
 
     // use strsep
