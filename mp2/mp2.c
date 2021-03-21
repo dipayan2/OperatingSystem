@@ -81,7 +81,7 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
                   printk(KERN_ALERT "The token : %s\n",token);
                   value = simple_strtol(token, &endptr, 10);
                   if (value == 0 && endptr == token){
-                     printk(KERN_ALERT "Error in long conversion")
+                     printk(KERN_ALERT "Error in long conversion");
                   } 
                   else{
                      printk(KERN_ALERT "The value is %ld\n", value);
@@ -98,7 +98,7 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
                  printk(KERN_ALERT "The token : %s\n",token);
                   value = simple_strtol(token, &endptr, 10);
                   if (value == 0 && endptr == token){
-                     printk(KERN_ALERT "Error in long conversion")
+                     printk(KERN_ALERT "Error in long conversion");
                   } 
                   else{
                      printk(KERN_ALERT "The value is %ld\n", value);
