@@ -101,7 +101,7 @@ void handleRegistration(char *kbuf){
    task_inp = (struct mp2_task_struct *) kmalloc(sizeof(struct mp2_task_struct),GFP_KERNEL);
    if (!task_inp){
       printk(KERN_INFO "Unable to allocate pid_inp memory\n");
-      return -EFAULT;
+      return ;
    }
 
    task_inp->pid = pid_inp;
@@ -155,7 +155,7 @@ void handleYield(char *kbuf){
 void handleDeReg(char *kbuf){
    int idx = 0;
    char* token;
-   int t_pid;
+   int t_pid = -1;
    char action;
    char *endptr;
    long value;
