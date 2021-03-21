@@ -76,6 +76,7 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
          else{
             if (action == 'R'){
                if (idx <= 3){
+                  printk(KERN_ALERT "The token : %s\n",token);
                   if(kstrtol(token,10,&readVal[idx-1])){
                      printk(KERN_ALERT "This number is %ld\n",readVal[idx-1]);
                   }
