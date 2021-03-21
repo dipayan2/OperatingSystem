@@ -195,7 +195,7 @@ void handleDeReg(char *kbuf){
 		 temp= list_entry(posv, struct mp2_task_struct, list);
        if (temp->pid == t_pid){
           list_del(posv);
-          printk(KERN_INFO "\nDeleted Pid : %d and cpu_time\n", temp->my_id);
+          printk(KERN_INFO "\nDeleted Pid : %d and cpu_time\n", temp->pid);
           kfree(temp);
        }
 	}
