@@ -16,6 +16,7 @@
 #include <linux/workqueue.h>
 #include <linux/sched.h>
 #include <linux/spinlock.h>
+#include <linux/string.h>
 
 #include "mp2_given.h"
 
@@ -50,6 +51,8 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
     long ret;
     int pidx;
     char *kbuf; // buffer where we will read the data
+    char* token;
+
     if (*data > 0){
         printk(KERN_INFO "\nError in offset of the file\n");
         return -EFAULT;
@@ -62,6 +65,11 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
         return -EFAULT;
     }
     printk(KERN_ALERT "%s\n",kbuf);
+    while( (token = strsep(&kbuf,",")) != NULL ){
+         printf("%s\n",token);
+    }
+        
+
     // use strsep
     
     kfree(kbuf);
