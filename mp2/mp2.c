@@ -75,9 +75,9 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
          }
          else{
             if (action == 'R'){
-               if (idx <= 4){
-                  if(kstrtol(token,10,&readVal[idx-2])){
-                     printk(KERN_ALERT "This number is %ld\n",readVal[idx-2]);
+               if (idx <= 3){
+                  if(kstrtol(token,10,&readVal[idx-1])){
+                     printk(KERN_ALERT "This number is %ld\n",readVal[idx-1]);
                   }
                   
                }
@@ -87,7 +87,7 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
             }
             else if (action == 'Y' || action == 'D'){
                 if(kstrtol(token,10,&readVal[idx-2])){
-                   printk(KERN_ALERT "This number is %ld\n",readVal[idx-2]);
+                   printk(KERN_ALERT "This number is %ld\n",readVal[idx-1]);
                 }
                 
                 break;
