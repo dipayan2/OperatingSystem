@@ -39,7 +39,17 @@ struct mp2_task_struct {
   enum task_state state;
 };
 
-
+char* removeLeadSpace(char *ptr){
+   while(*ptr != '\0'){
+      if (*ptr == ' '){
+         ptr++;
+      }
+      else{
+         return ptr;
+      }
+   }
+   return ptr;
+}
 
  /**
   * 
@@ -78,6 +88,7 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
          else{
             if (action == 'R'){
                if (idx <= 3){
+                  token = removeLeadSpace(token);
                   printk(KERN_ALERT "The token : %s\n",token);
                   value = simple_strtol(token, &endptr, 10);
                   if (value == 0 && endptr == token){
@@ -95,17 +106,19 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
                }
             }
             else if (action == 'Y' || action == 'D'){
-                 printk(KERN_ALERT "The token : %s\n",token);
-                  value = simple_strtol(token, &endptr, 10);
-                  if (value == 0 && endptr == token){
-                     printk(KERN_ALERT "Error in long conversion");
-                  } 
-                  else{
-                     printk(KERN_ALERT "The value is %ld\n", value);
-                     readVal[idx-1] = value;
-                  }
+        
+               token = removeLeadSpace(token);
+               printk(KERN_ALERT "The token : %s\n",token);
+               value = simple_strtol(token, &endptr, 10);
+               if (value == 0 && endptr == token){
+                  printk(KERN_ALERT "Error in long conversion");
+               } 
+               else{
+                  printk(KERN_ALERT "The value is %ld\n", value);
+                  readVal[idx-1] = value;
+               }
                 
-                break;
+               break;
             }
          }
          idx += 1;
