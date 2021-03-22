@@ -177,6 +177,7 @@ int my_dispatch(void* data){
                sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
 
                crt_task = next_task;
+               printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid)
 
 
             }
@@ -188,6 +189,7 @@ int my_dispatch(void* data){
             sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
             wake_up_process(next_task->linux_task); // wakes up the next process
             crt_task = next_task;
+            printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid)
 
          }
       }
@@ -203,6 +205,7 @@ int my_dispatch(void* data){
 void handleRegistration(char *kbuf){
 
    // Data for reading the input
+   printk(KERN_ALERT "Handle Registration \n");
    int idx = 0;
    char* token;
    long readVal[5];
@@ -266,6 +269,7 @@ void handleRegistration(char *kbuf){
 }
 
 void handleYield(char *kbuf){
+   printk(KERN_ALERT "Handle Yield\n");
    int idx = 0;
    char* token;
    long t_pid = -1;
@@ -315,10 +319,12 @@ void handleYield(char *kbuf){
    if (flag == 0){
       return;
    }
+    printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
    sleep_task->state = SLEEPING;
    deadline = sleep_task->period_ms - sleep_task->runtime_ms;
    set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
    mod_timer(&sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
+  
    sparam.sched_priority=0; 
    sched_setscheduler(sleep_task->linux_task, SCHED_NORMAL,&sparam);
    wake_up_process(kernel_task); 
@@ -326,6 +332,7 @@ void handleYield(char *kbuf){
 }
 
 void handleDeReg(char *kbuf){
+   printk(KERN_ALERT "Handle Dereg\n");
    int idx = 0;
    char* token;
    int t_pid = -1;
@@ -378,7 +385,7 @@ void handleDeReg(char *kbuf){
           list_del(posv);
           del_timer(&temp->wakeup_timer);
           // need to delete the timer too
-          printk(KERN_INFO "\nDeleted Pid : %d and cpu_time\n", temp->pid);
+          printk(KERN_ALERT "\nDeleted Pid : %d and cpu_time\n", temp->pid);
           kmem_cache_free(mp2_cache,temp);
           flag = 1;
        }
