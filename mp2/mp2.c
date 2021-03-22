@@ -52,6 +52,11 @@ struct mp2_task_struct {
   enum task_state state;
 };
 
+void mp2_task_constructor(void *buf, int size)
+{
+    struct mp2_task_struct *mp2_task_struct = buf;
+}
+
 
 // To maintiain current running application
 struct mp2_task_struct* current;
@@ -500,7 +505,7 @@ int __init mp2_init(void)
    // Adding the files
    mp2_file = proc_create("status", 0666, mp2_dir, &mp2_fops);
 
-   mp2_cache = kmem_cache_create("mp2_cache", sizeof(struct mp2_task_struct),0,0);
+   mp2_cache = kmem_cache_create("mp2_cache", sizeof(struct mp2_task_struct),0,0, (void*)mp2_task_constructor);
 //    // Checkpoint 1 done
 //    // Setup Work Queue
 //    my_wq = create_workqueue("mp1q");
