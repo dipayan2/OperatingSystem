@@ -186,7 +186,7 @@ int my_dispatch(void* data){
                sparam.sched_priority=99;
                sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
                wake_up_process(next_task->linux_task); // wakes up the next process
-               printk(KERN_ALERT "[Disp] pre-emption  Waking up the %d from %d\n"next_task->pid, crt_task->pid);
+               printk(KERN_ALERT "[Disp] pre-emption  Waking up the %d from %d\n",next_task->pid, crt_task->pid);
                crt_task->state = READY;
                sparam.sched_priority = 0;
                sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
