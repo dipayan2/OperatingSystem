@@ -125,7 +125,7 @@ void my_timer_callback(unsigned long data) {
       // No process here
       return;
    }
-   printk(KERN_ALERT "Timer Calling dispatcher\n");
+   printk(KERN_ALERT "Timer %lu Calling dispatcher\n",data);
    wake_up_process(kernel_task);
   
 }
