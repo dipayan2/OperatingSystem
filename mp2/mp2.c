@@ -268,7 +268,7 @@ void handleRegistration(char *kbuf){
 void handleYield(char *kbuf){
    int idx = 0;
    char* token;
-   long t_pid;
+   long t_pid = -1;
    char action;
    char *endptr;
    long value;
