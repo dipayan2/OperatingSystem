@@ -96,18 +96,18 @@ void removeLeadSpace(char** ptr){
  * 
  * **/
 void my_timer_callback(unsigned long data) {
-   //printk(KERN_ALERT "This line is timer _ handler %lu \n", data );
+   printk(KERN_ALERT "This line is timer _ handler %lu \n", data );
    struct list_head *pos, *q;
    struct mp2_task_struct *tmp, *torun_task;
    int flag = 0;
    unsigned long state_save;
    // Make the current PID , READY
-   //printk(KERN_ALERT "Entering lock of timer\n");
+   printk(KERN_ALERT "Entering lock of timer\n");
    spin_lock_irqsave(&my_lock, state_save);
    //spin_lock(&my_lock);
    list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp2_task_struct, list);
-      //printk(KERN_ALERT "Timer looping through list\n");
+      printk(KERN_ALERT "Timer looping through list\n");
       if (tmp->pid == data){
          torun_task = tmp;
          torun_task->state = READY;
@@ -116,13 +116,13 @@ void my_timer_callback(unsigned long data) {
    }
    //spin_unlock(&my_lock);
    spin_unlock_irqrestore(&my_lock, state_save);
-   //printk(KERN_ALERT "Finished looping\n");
+   printk(KERN_ALERT "Finished looping\n");
 
    if(flag == 0){
       // No process here
       return;
    }
-   //printk(KERN_ALERT "Timer Calling dispatcher\n");
+   printk(KERN_ALERT "Timer Calling dispatcher\n");
    wake_up_process(kernel_task);
   
 }
@@ -143,11 +143,11 @@ int my_dispatch(void* data){
 
    while(!kthread_should_stop()){
       period = MAX_PERIOD;
-      //printk(KERN_ALERT "[Disp] Enter the loop\n");
+      printk(KERN_ALERT "[Disp] Enter the loop\n");
       if(crt_task != NULL && crt_task->state == SLEEPING){
          sparam.sched_priority=0;
          sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
-         //printk(KERN_ALERT "[Disp] Set the current task : %d to NULL if sleeping\n",crt_task->pid);
+         printk(KERN_ALERT "[Disp] Set the current task : %d to NULL if sleeping\n",crt_task->pid);
          crt_task = NULL;
       }
 
@@ -157,7 +157,7 @@ int my_dispatch(void* data){
          list_for_each_safe(pos, q, &test_head){
 
             tmp= list_entry(pos, struct mp2_task_struct, list);
-            // //printk(KERN_INFO "Freeing List\n");
+            // printk(KERN_INFO "Freeing List\n");
             if (tmp->state == READY && tmp->period_ms < period){
                next_task = tmp;
                period = tmp->period_ms;
@@ -165,13 +165,13 @@ int my_dispatch(void* data){
             }
          }
       spin_unlock(&my_lock);
-      //printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
+      printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
       if(flag == 1){
          if(crt_task != NULL){
             if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
                // Non pre-emption
                next_task->state = READY;
-               //printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
+               printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
             }
             else{
                // pre-emption
@@ -183,7 +183,7 @@ int my_dispatch(void* data){
                crt_task->state = READY;
                sparam.sched_priority = 0;
                sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
-               //printk(KERN_ALERT "[Disp]atcher Scheduled %d and removed %d\n ", crt_task->pid, next_task->pid);
+               printk(KERN_ALERT "[Disp]atcher Scheduled %d and removed %d\n ", crt_task->pid, next_task->pid);
                crt_task = next_task;
                
 
@@ -197,7 +197,7 @@ int my_dispatch(void* data){
             sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
             wake_up_process(next_task->linux_task); // wakes up the next process
             crt_task = next_task;
-            // //printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid);
+            // printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid);
 
          }
       }
@@ -213,7 +213,7 @@ int my_dispatch(void* data){
 void handleRegistration(char *kbuf){
 
    // Data for reading the input
-   //printk(KERN_ALERT "Handle Registration \n");
+   printk(KERN_ALERT "Handle Registration \n");
    int idx = 0;
    char* token;
    long readVal[5];
@@ -230,17 +230,17 @@ void handleRegistration(char *kbuf){
    while( (token = strsep(&kbuf,",")) != NULL ){
          if (idx == 0){
             action = *token;
-            // //printk(KERN_ALERT "This value is %c \n",action);
+            // printk(KERN_ALERT "This value is %c \n",action);
          }
          else if (idx <= 3){
             removeLeadSpace(&token);
-            ////printk(KERN_ALERT "The token : %s\n",token);
+            //printk(KERN_ALERT "The token : %s\n",token);
             value = simple_strtol(token, &endptr, 10);
             if (value == 0 && endptr == token){
-               // //printk(KERN_ALERT "Error in long conversion");
+               // printk(KERN_ALERT "Error in long conversion");
             } 
             else{
-               // //printk(KERN_ALERT "The value is %ld\n", value);
+               // printk(KERN_ALERT "The value is %ld\n", value);
                readVal[idx-1] = value;
             }
             
@@ -255,7 +255,7 @@ void handleRegistration(char *kbuf){
    // Need to use kmem. for now using kmallloo
    task_inp = kmem_cache_alloc(mp2_cache,GFP_KERNEL);
    if (!task_inp){
-      //printk(KERN_INFO "Unable to allocate pid_inp memory\n");
+      printk(KERN_INFO "Unable to allocate pid_inp memory\n");
       return ;
    }
 
@@ -277,7 +277,7 @@ void handleRegistration(char *kbuf){
 }
 
 void handleYield(char *kbuf){
-   //printk(KERN_ALERT "Handle Yield\n");
+   printk(KERN_ALERT "Handle Yield\n");
    int idx = 0;
    char* token;
    long t_pid = -1;
@@ -296,17 +296,17 @@ void handleYield(char *kbuf){
    while( (token = strsep(&kbuf,",")) != NULL ){
       if (idx == 0){
          action = *token;
-         // //printk(KERN_ALERT "This value is %c \n",action);
+         // printk(KERN_ALERT "This value is %c \n",action);
       }
       else if (idx <= 1){
          removeLeadSpace(&token);
-         ////printk(KERN_ALERT "The token : %s\n",token);
+         //printk(KERN_ALERT "The token : %s\n",token);
          value = simple_strtol(token, &endptr, 10);
          if (value == 0 && endptr == token){
-            // //printk(KERN_ALERT "Error in long conversion");
+            // printk(KERN_ALERT "Error in long conversion");
          } 
          else{
-            // //printk(KERN_ALERT "The value is %ld\n", value);
+            // printk(KERN_ALERT "The value is %ld\n", value);
             t_pid = value;
          }
          
@@ -327,7 +327,7 @@ void handleYield(char *kbuf){
    if (flag == 0){
       return;
    }
-   //  //printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
+   //  printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
    sleep_task->state = SLEEPING;
    deadline = sleep_task->period_ms - sleep_task->runtime_ms;
    set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
@@ -340,7 +340,7 @@ void handleYield(char *kbuf){
 }
 
 void handleDeReg(char *kbuf){
-   //printk(KERN_ALERT "Handle Dereg\n");
+   printk(KERN_ALERT "Handle Dereg\n");
    int idx = 0;
    char* token;
    int t_pid = -1;
@@ -356,17 +356,17 @@ void handleDeReg(char *kbuf){
    while( (token = strsep(&kbuf,",")) != NULL ){
       if (idx == 0){
          action = *token;
-         // //printk(KERN_ALERT "This value is %c \n",action);
+         // printk(KERN_ALERT "This value is %c \n",action);
       }
       else if (idx <= 1){
          removeLeadSpace(&token);
-         ////printk(KERN_ALERT "The token : %s\n",token);
+         //printk(KERN_ALERT "The token : %s\n",token);
          value = simple_strtol(token, &endptr, 10);
          if (value == 0 && endptr == token){
-            // //printk(KERN_ALERT "Error in long conversion");
+            // printk(KERN_ALERT "Error in long conversion");
          } 
          else{
-            // //printk(KERN_ALERT "The value is %ld\n", value);
+            // printk(KERN_ALERT "The value is %ld\n", value);
             t_pid = (int)value;
             break;
          }
@@ -393,7 +393,7 @@ void handleDeReg(char *kbuf){
           list_del(posv);
           del_timer(&temp->wakeup_timer);
           // need to delete the timer too
-          //printk(KERN_ALERT "\nDeleted Pid : %d and cpu_time\n", temp->pid);
+          printk(KERN_ALERT "\nDeleted Pid : %d and cpu_time\n", temp->pid);
           kmem_cache_free(mp2_cache,temp);
           flag = 1;
        }
@@ -424,17 +424,17 @@ static ssize_t mp2_write (struct file *file, const char __user *buffer, size_t c
 
 
     if (*data > 0){
-        //printk(KERN_INFO "\nError in offset of the file\n");
+        printk(KERN_INFO "\nError in offset of the file\n");
         return -EFAULT;
     }
     // Define a buffer for the string
     kbuf = (char*) kmalloc(count,GFP_KERNEL); 
     ret = strncpy_from_user(kbuf, buffer, count);
     if (ret == -EFAULT){
-        //printk(KERN_INFO "\nerror in reading the PID\n");
+        printk(KERN_INFO "\nerror in reading the PID\n");
         return -EFAULT;
     }
-    //printk(KERN_ALERT "%s\n",kbuf);
+    printk(KERN_ALERT "%s\n",kbuf);
     if (kbuf[0]=='R'){
        handleRegistration(kbuf);
     } 
@@ -461,14 +461,14 @@ static ssize_t mp2_read (struct file *file, char __user *buffer, size_t count, l
    struct mp2_task_struct *entry; // Kernel Linked List
    // Checking if the offset is correct
    if (*data > 0){
-      //printk(KERN_INFO "\nRead offset issue\n");
+      printk(KERN_INFO "\nRead offset issue\n");
       return 0;
    }
-   //printk(KERN_INFO "\nRead function called\n");
+   printk(KERN_INFO "\nRead function called\n");
   
    buf = (char *) kmalloc(count,GFP_KERNEL);    // Allocating kernel memory and checking if properly allocated
    if (!buf){
-      //printk(KERN_INFO "Unable to allocate buffer!!\n");
+      printk(KERN_INFO "Unable to allocate buffer!!\n");
        return -ENOMEM;
    }
       
@@ -478,7 +478,7 @@ static ssize_t mp2_read (struct file *file, char __user *buffer, size_t count, l
       spin_lock(&my_lock);
       list_for_each(ptr,&test_head){
          entry=list_entry(ptr,struct mp2_task_struct,list);
-         ////printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
+         //printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
          // Add this entry into the buffer
          len += scnprintf(buf+len,count-len,"%d: %lu, %lu\n",entry->pid,entry->period_ms, entry->runtime_ms);
       }
@@ -510,9 +510,9 @@ static const struct file_operations mp2_fops = {
 int __init mp2_init(void)
 {
    #ifdef DEBUG
-   //printk(KERN_ALERT "MP2 MODULE LOADING\n");
+   printk(KERN_ALERT "MP2 MODULE LOADING\n");
    #endif
-   //printk(KERN_ALERT "Hello World\n");
+   printk(KERN_ALERT "Hello World\n");
    // Initilizing the linked list
    INIT_LIST_HEAD(&test_head);
 //    // Created the directory
@@ -524,7 +524,7 @@ int __init mp2_init(void)
 //.    // Checkpoint 1 done
 //    // Setup Work Queue
 //    my_wq = create_workqueue("mp1q");
-//    //printk(KERN_ALERT "Initializing a module with timer.\n");
+//    printk(KERN_ALERT "Initializing a module with timer.\n");
 //    // Set up the timer
 //    setup_timer(&my_timer, my_timer_callback, 0);
 //    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
@@ -532,16 +532,16 @@ int __init mp2_init(void)
    crt_task = NULL;
    kernel_task = kthread_create(&my_dispatch,NULL,"my_dispatch");
 
-   //printk(KERN_ALERT "MP2 MODUL LOADED\n");
+   printk(KERN_ALERT "MP2 MODUL LOADED\n");
    return 0;   
 }
 
 void __exit mp2_exit(void)
 {
    #ifdef DEBUG
-   //printk(KERN_ALERT "MP2 MODULE UNLOADING\n");
+   printk(KERN_ALERT "MP2 MODULE UNLOADING\n");
    #endif
-   //printk(KERN_ALERT "Goodbye\n");
+   printk(KERN_ALERT "Goodbye\n");
    // Removing the timer
 //    del_timer(&my_timer);
 //    //Removing the workqueue
@@ -557,17 +557,17 @@ void __exit mp2_exit(void)
          list_for_each_safe(pos, q, &test_head){
 
             tmp= list_entry(pos, struct mp2_task_struct, list);
-            // //printk(KERN_INFO "Freeing List\n");
+            // printk(KERN_INFO "Freeing List\n");
             list_del(pos);
             del_timer(&tmp->wakeup_timer);
             kmem_cache_free(mp2_cache,tmp);
          }
     }
    spin_unlock(&my_lock);
-   //printk(KERN_ALERT "List Freed\n");
+   printk(KERN_ALERT "List Freed\n");
 
 //     // Removing the timer 
-//    //printk(KERN_ALERT "removing timer\n");
+//    printk(KERN_ALERT "removing timer\n");
  
 //    // Removing the directory and files
   
@@ -575,7 +575,7 @@ void __exit mp2_exit(void)
    remove_proc_entry("status", mp2_dir);
    remove_proc_entry("mp2", NULL);
 
-   //printk(KERN_ALERT "MP2 MODULE UNLOADED\n");
+   printk(KERN_ALERT "MP2 MODULE UNLOADED\n");
 }
 
 // Loading bnew and unloading the kernel modules
