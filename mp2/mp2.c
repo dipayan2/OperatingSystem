@@ -128,7 +128,7 @@ void my_timer_callback(unsigned long data) {
  * 
  * **/
 
-int dispatch(){
+int my_dispatch(){
    struct list_head *pos, *q;
    struct mp2_task_struct *tmp, *next_task;
    unsigned long period;
@@ -515,7 +515,7 @@ int __init mp2_init(void)
 //    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
    Cp = 0;
    crt_task = NULL;
-   kernel_task = kthread_create(&dispatch,NULL,"dispatch");
+   kernel_task = kthread_create(&my_dispatch,NULL,"my_dispatch");
 
    printk(KERN_ALERT "MP2 MODULE VAL LOADED\n");
    return 0;   
