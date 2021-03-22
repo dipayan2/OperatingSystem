@@ -175,16 +175,18 @@ int my_dispatch(void* data){
          if(crt_task != NULL){
             if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
                // Non pre-emption
-               next_task->state = READY;
                printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
+               next_task->state = READY;
+              
             }
             else{
                // pre-emption
+               printk(KERN_ALERT "[Disp]  pre-emption : %d  waking %d\n", crt_task->pid, next_task->pid);
                next_task->state = RUNNING;
                sparam.sched_priority=99;
                sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
                wake_up_process(next_task->linux_task); // wakes up the next process
-
+               printk(KERN_ALERT "[Disp] pre-emption  Waking up the %d from %d\n"next_task->pid, crt_task->pid);
                crt_task->state = READY;
                sparam.sched_priority = 0;
                sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
@@ -197,9 +199,11 @@ int my_dispatch(void* data){
          }
          else{
             // No executing task
+            printk(KERN_ALERT "[Disp] No executing task setting  %d\n", next_task->pid);
             next_task->state = RUNNING;
             sparam.sched_priority=99;
             sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
+            printk(KERN_ALERT "[Disp] Scheduled  setting  %d\n", next_task->pid);
             wake_up_process(next_task->linux_task); // wakes up the next process
             crt_task = next_task;
             // printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid);
