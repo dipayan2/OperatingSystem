@@ -17,6 +17,7 @@
 #include <linux/sched.h>
 #include <linux/spinlock.h>
 #include <linux/string.h>
+#include <linux/kthread.h>  // for threads
 
 #include "mp2_given.h"
 #define MAX_PERIOD 1000000
@@ -71,8 +72,9 @@ void my_timer_callback(unsigned long data) {
    struct list_head *pos, *q;
    struct mp2_task_struct *tmp;
    int flag = 0;
+   unsigned long state_save;
    // Make the current PID , READY
-   spin_lock(&my_lock);
+   spin_lock_irqsave(&my_lock, state_save);
    list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp2_task_struct, list);
 
@@ -81,8 +83,8 @@ void my_timer_callback(unsigned long data) {
          task->state = READY;
          flag = 1;
       }
-      }
-   spin_unlock(&my_lock);
+   }
+   spin_unlock_irqrestore(&my_lock, state_save);
 
    if(flag == 0){
       // No process here
@@ -98,11 +100,12 @@ void my_timer_callback(unsigned long data) {
  * 
  * **/
 
-int dispatch(void *data){
+int dispatch(){
    struct list_head *pos, *q;
-   struct mp2_task_struct *tmp;
+   struct mp2_task_struct *tmp, *next_task;
    unsigned long period;
    struct sched_param sparam; 
+   long flag = 0;
    
 
    while(!kthread_should_stop()){
@@ -116,7 +119,52 @@ int dispatch(void *data){
 
       spin_lock(&my_lock);
       // Find the task to run
+         list_for_each_safe(pos, q, &test_head){
+
+            tmp= list_entry(pos, struct mp2_task_struct, list);
+            // printk(KERN_INFO "Freeing List\n");
+            if (tmp->state == READY && tmp->period_ms < period){
+               next_task = tmp;
+               period = tmp->period_ms;
+               flag = 1;
+            }
+         }
       spin_unlock(&my_lock);
+
+      if(flag == 1){
+         if(current != NULL){
+            if (current->period_ms <= next_task->period_ms && current->state == RUNNING){
+               // Non pre-emption
+               next_task->state = READY;
+            }
+            else{
+               // pre-emption
+               next_task->state = RUNNING;
+               sparam.sched_priority=99;
+               sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
+               wake_up_process(next_task->linux_task); // wakes up the next process
+
+               current->state = READY;
+               sparam.sched_priority = 0;
+               sched_setscheduler(current->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
+
+               current = next_task;
+
+
+            }
+         }
+         else{
+            // No executing task
+            next_task->state = RUNNING;
+            sparam.sched_priority=99;
+            sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
+            wake_up_process(next_task->linux_task); // wakes up the next process
+            current = next_task;
+
+         }
+      }
+      set_current_state(TASK_INTERRUPTIBLE); // Allow the kernel thread to sleep
+      schedule(); // Schedule the added task 
 
    }// end of while, it will exit properly
 
@@ -185,8 +233,7 @@ void handleRegistration(char *kbuf){
    list_add(&(task_inp->list),&test_head);
    spin_unlock(&my_lock);
 
-
-   // Do the work of registration
+   return;
    
 }
 
@@ -197,6 +244,15 @@ void handleYield(char *kbuf){
    char action;
    char *endptr;
    long value;
+
+// List data structure 
+   struct list_head *pos, *q;
+   struct mp2_task_struct *temp, *sleep_task;
+   struct sched_param sparam; 
+   int flag = 0;
+   unsigned long deadline;
+
+
    while( (token = strsep(&kbuf,",")) != NULL ){
       if (idx == 0){
          action = *token;
@@ -218,7 +274,27 @@ void handleYield(char *kbuf){
       idx += 1;
    } // read all the data
 
+   spin_lock(&my_lock);
+   list_for_each_safe(pos, q, &test_head){
+      temp= list_entry(pos, struct mp2_task_struct, list);
+      if (temp->pid == t_pid){
+         sleep_task = temp;
+         flag = 1;
+      }
+   }
+   spin_unlock(&my_lock);
    // Do work of Yield
+   if (flag == 0){
+      return;
+   }
+   sleep_task->state = SLEEPING;
+   deadline = sleep_task->period_ms - sleep_task->runtime_ms;
+   set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
+   mod_timer(&sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
+   sparam.sched_priority=0; 
+   sched_setscheduler(sleep_task->linux_task, SCHED_NORMAL,&sparam);
+   wake_up_process(kernel_task); 
+   return;
 }
 
 void handleDeReg(char *kbuf){
@@ -232,6 +308,7 @@ void handleDeReg(char *kbuf){
    // Data for dereg the task
    struct list_head *posv, *qv;
    struct mp2_task_struct *temp;
+   int flag = 0;
 
    while( (token = strsep(&kbuf,",")) != NULL ){
       if (idx == 0){
@@ -264,14 +341,25 @@ void handleDeReg(char *kbuf){
 
 		 temp= list_entry(posv, struct mp2_task_struct, list);
        if (temp->pid == t_pid){
+          // found a task to remove
+          if(current == temp){
+             current = NULL;
+          }
           list_del(posv);
+          del_timer(&temp->wakeup_timer);
           // need to delete the timer too
           printk(KERN_INFO "\nDeleted Pid : %d and cpu_time\n", temp->pid);
           kfree(temp);
-          break;
+          flag = 1;
        }
 	}
    spin_unlock(&my_lock);
+
+   if (flag == 0){
+      return;
+   }
+   wake_up_process(kernel_task);
+   return;
 
 }
 
@@ -393,6 +481,8 @@ int __init mp2_init(void)
 //    // Set up the timer
 //    setup_timer(&my_timer, my_timer_callback, 0);
 //    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
+   current = NULL;
+   kernel_task = kthread_create(&dispatch,NULL,"dispatch");
 
    printk(KERN_ALERT "MP2 MODULE LOADED\n");
    return 0;   
