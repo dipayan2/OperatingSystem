@@ -100,10 +100,11 @@ void my_timer_callback(unsigned long data) {
    struct list_head *pos, *q;
    struct mp2_task_struct *tmp, *torun_task;
    int flag = 0;
-   //unsigned long state_save;
+   unsigned long state_save;
    // Make the current PID , READY
    printk(KERN_ALERT "Entering lock of timer\n");
-   spin_lock(&my_lock);
+   spin_lock_irqsave(&my_lock, state_save);
+   //spin_lock(&my_lock);
    list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp2_task_struct, list);
       printk(KERN_ALERT "Timer looping through list\n");
@@ -113,7 +114,8 @@ void my_timer_callback(unsigned long data) {
          flag = 1;
       }
    }
-   spin_unlock(&my_lock);
+   //spin_unlock(&my_lock);
+   spin_unlock_irqsave(&my_lock, state_save);
    printk(KERN_ALERT "Finished looping\n");
 
    if(flag == 0){
@@ -162,12 +164,13 @@ int my_dispatch(void* data){
             }
          }
       spin_unlock(&my_lock);
-      printk(KERN_ALERT "Found the next task to run : %d\n",next_task->pid);
+      printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
       if(flag == 1){
          if(crt_task != NULL){
             if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
                // Non pre-emption
                next_task->state = READY;
+               printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
             }
             else{
                // pre-emption
@@ -179,9 +182,9 @@ int my_dispatch(void* data){
                crt_task->state = READY;
                sparam.sched_priority = 0;
                sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
-
+               printk(KERN_ALERT "[Disp]atcher Scheduled %d and removed %d\n ", crt_task->pid, next_task->pid);
                crt_task = next_task;
-               // printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid);
+               
 
 
             }
