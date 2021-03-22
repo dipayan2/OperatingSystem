@@ -274,7 +274,9 @@ void handleRegistration(char *kbuf){
    pid_inp = (int)readVal[0];
    tperiod = readVal[1];
    comp_time = readVal[2];
-   
+   if (accept_proc(tperiod,comp_time) == 0){
+      return;
+   }
    // Need to use kmem. for now using kmallloo
    task_inp = kmem_cache_alloc(mp2_cache,GFP_KERNEL);
    if (!task_inp){
