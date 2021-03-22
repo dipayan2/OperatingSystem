@@ -154,7 +154,7 @@ int my_dispatch(void* data){
          crt_task = NULL;
       }
 
-      
+      printk(KERN_ALERT "[Disp] before the lock")
       spin_lock(&my_lock);
       // Find the task to run
           if(!list_empty(&test_head)){
