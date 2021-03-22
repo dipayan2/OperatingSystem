@@ -17,7 +17,7 @@
 #include <linux/list.h>
 #include <linux/delay.h>
 #include "mp2_given.h"
-
+#include <linux/uaccess.h>
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Group_30");
 MODULE_DESCRIPTION("CS-423 mp2");
