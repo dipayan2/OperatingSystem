@@ -108,10 +108,10 @@ void my_timer_callback(unsigned long data) {
    if(!list_empty(&test_head)){
       list_for_each_safe(pos, q, &test_head){
          tmp= list_entry(pos, struct mp2_task_struct, list);
-         printk(KERN_ALERT "Timer looping through list\n");
+         printk(KERN_ALERT "Timer looping through list %d \n",data);
          if (tmp->pid == data){
             torun_task = tmp;
-            printk(KERN_ALERT "Timer list pid :%d\n",data);
+            printk(KERN_ALERT "Timer  Found list pid :%d\n",data);
             torun_task->state = READY;
             flag = 1;
          }
