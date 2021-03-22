@@ -115,7 +115,7 @@ void my_timer_callback(unsigned long data) {
       }
    }
    //spin_unlock(&my_lock);
-   spin_unlock_irqsave(&my_lock, state_save);
+   spin_unlock_irqrestore(&my_lock, state_save);
    printk(KERN_ALERT "Finished looping\n");
 
    if(flag == 0){
