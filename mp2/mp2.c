@@ -141,7 +141,7 @@ int my_dispatch(void* data){
 
    while(!kthread_should_stop()){
       period = MAX_PERIOD;
-      printk(KERN_ALERT "[Disp] Enter the loop\n")
+      printk(KERN_ALERT "[Disp] Enter the loop\n");
       if(crt_task != NULL && crt_task->state == SLEEPING){
          sparam.sched_priority=0;
          sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
