@@ -30,7 +30,10 @@ MODULE_AUTHOR("dipayan2");
 MODULE_DESCRIPTION("CS-423 MP2");
 
 /* LOCKING VARIABLE*/
-static DEFINE_SPINLOCK(my_lock);
+static DEFINE_SPINLOCK(my_spin);
+
+mutex_t my_lock;
+mutex_init(&my_lock, NULL, NULL);
 
 enum task_state {READY = 0, RUNNING = 1, SLEEPING = 2}; 
 
@@ -106,6 +109,7 @@ void my_timer_callback(unsigned long data) {
    printk(KERN_ALERT "Entering lock of timer\n");
   // spin_lock_irqsave(&my_lock, state_save);
    mutex_lock(&my_lock);
+   spin_lock(&my_spin);
    if(!list_empty(&test_head)){
       list_for_each_safe(pos, q, &test_head){
          tmp= list_entry(pos, struct mp2_task_struct, list);
@@ -118,6 +122,7 @@ void my_timer_callback(unsigned long data) {
          }
       }
    }
+   spin_unlock(&my_spin);
    mutex_unlock(&my_lock);
    //spin_unlock_irqrestore(&my_lock, state_save);
    printk(KERN_ALERT "Finished looping\n");
