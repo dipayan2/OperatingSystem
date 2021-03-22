@@ -19,7 +19,7 @@
 #include <linux/string.h>
 
 #include "mp2_given.h"
-
+#define MAX_PERIOD 1000000
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("dipayan2");
@@ -44,6 +44,11 @@ struct mp2_task_struct {
   enum task_state state;
 };
 
+
+// To maintiain current running application
+struct mp2_task_struct * current;
+struct task_struct* kernel_task;
+
 void removeLeadSpace(char** ptr){
    while(**ptr != '\0'){
       if (**ptr == ' '){
@@ -55,6 +60,69 @@ void removeLeadSpace(char** ptr){
    }
    return;
 }
+
+/**
+ * 
+ * Timer handler function
+ * 
+ * **/
+void my_timer_callback(unsigned long data) {
+   printk(KERN_ALERT "This line is timer _ handler \n");
+   struct list_head *pos, *q;
+   struct mp2_task_struct *tmp;
+   int flag = 0;
+   // Make the current PID , READY
+   spin_lock(&my_lock);
+   list_for_each_safe(pos, q, &test_head){
+      tmp= list_entry(pos, struct mp2_task_struct, list);
+
+      if (tmp->pid == data){
+         task = tmp;
+         task->state = READY;
+         flag = 1;
+      }
+      }
+   spin_unlock(&my_lock);
+
+   if(flag == 0){
+      // No process here
+      return;
+   }
+   wake_up_process(kernel_task);
+  
+}
+
+/**
+ * 
+ * Kernel Dispatch Handler
+ * 
+ * **/
+
+int dispatch(void *data){
+   struct list_head *pos, *q;
+   struct mp2_task_struct *tmp;
+   unsigned long period;
+   struct sched_param sparam; 
+   
+
+   while(!kthread_should_stop()){
+      period = MAX_PERIOD;
+
+      if(current != NULL && current->state == SLEEPING){
+         sparam.sched_priority=0;
+         sched_setscheduler(current->linux_task, SCHED_NORMAL, &sparam);
+         current = NULL;
+      }
+
+      spin_lock(&my_lock);
+      // Find the task to run
+      spin_unlock(&my_lock);
+
+   }// end of while, it will exit properly
+
+   return 0;
+}
+
 
 void handleRegistration(char *kbuf){
 
@@ -109,6 +177,7 @@ void handleRegistration(char *kbuf){
    task_inp->runtime_ms = comp_time;
    task_inp->linux_task = find_task_by_pid(pid_inp);
    task_inp->state = SLEEPING;
+   setup_timer( &task_inp->wakeup_timer, my_timer_callback, task_inp->pid );
 
 
    // Add to list should be within lock
@@ -189,14 +258,17 @@ void handleDeReg(char *kbuf){
    // Do work DeReg
    // need to stop the timer, but let's not do that yet!!
    // Just remove from the list
+
    spin_lock(&my_lock);
    list_for_each_safe(posv, qv, &test_head){
 
 		 temp= list_entry(posv, struct mp2_task_struct, list);
        if (temp->pid == t_pid){
           list_del(posv);
+          // need to delete the timer too
           printk(KERN_INFO "\nDeleted Pid : %d and cpu_time\n", temp->pid);
           kfree(temp);
+          break;
        }
 	}
    spin_unlock(&my_lock);
