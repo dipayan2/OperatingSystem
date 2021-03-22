@@ -103,7 +103,7 @@ void my_timer_callback(unsigned long data) {
    unsigned long state_save;
    // Make the current PID , READY
    printk(KERN_ALERT "Entering lock of timer\n");
-   spin_lock_irqsave(&my_lock, state_save);
+  // spin_lock_irqsave(&my_lock, state_save);
    //spin_lock(&my_lock);
    if(!list_empty(&test_head)){
       list_for_each_safe(pos, q, &test_head){
@@ -118,7 +118,7 @@ void my_timer_callback(unsigned long data) {
       }
    }
    //spin_unlock(&my_lock);
-   spin_unlock_irqrestore(&my_lock, state_save);
+  // spin_unlock_irqrestore(&my_lock, state_save);
    printk(KERN_ALERT "Finished looping\n");
 
    if(flag == 0){
