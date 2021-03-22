@@ -396,6 +396,7 @@ static ssize_t procfile_read (struct file *file, char __user *buffer, size_t cou
    struct list_head *ptr;     // Kernel Linked List 
    struct mp2_task_struct *entry; // Kernel Linked List
    // Checking if the offset is correct
+   struct list_head *pos, *q;
    if (*data > 0){
       printk(KERN_INFO "\nRead offset issue\n");
       return 0;
@@ -411,9 +412,9 @@ static ssize_t procfile_read (struct file *file, char __user *buffer, size_t cou
    copied = 0;
    // Checking id list is empty otherwise, acquiring the lock and iterationg over and writing list values into the buffer.
    spin_lock(&mr_lock);
-   if (!list_empty(&test_head)){
+   if (!list_empty(&mp2_linked_list)){
       
-        list_for_each_safe(pos, q, & mp2_linked_list){
+        list_for_each_safe(pos, q, &mp2_linked_list){
             entry= list_entry(pos, struct mp2_task_struct, mp2_list);
             len += scnprintf(buf+len,count-len,"%d: %lu, %lu\n",entry->pid,entry->period_ms, entry->duration_ms);
 
