@@ -485,16 +485,18 @@ static ssize_t mp2_read (struct file *file, char __user *buffer, size_t count, l
       
    copied = 0;
    // Checking id list is empty otherwise, acquiring the lock and iterationg over and writing list values into the buffer.
+   spin_lock(&my_lock);
    if (!list_empty(&test_head)){
-      spin_lock(&my_lock);
+
       list_for_each(ptr,&test_head){
          entry=list_entry(ptr,struct mp2_task_struct,list);
          //printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
          // Add this entry into the buffer
          len += scnprintf(buf+len,count-len,"%d: %lu, %lu\n",entry->pid,entry->period_ms, entry->runtime_ms);
       }
-      spin_unlock(&my_lock);
+      
    }
+   spin_unlock(&my_lock);
 
 
    // Sending data to user buffer from kernel buffer

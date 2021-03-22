@@ -385,6 +385,54 @@ int Yield(unsigned int pid){
   return 0;
 }
 
+
+
+static ssize_t mp2_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
+
+     // Data declaration
+   int copied;                // Return Value
+   int len=0;                 // How much data is read
+   char *buf;                 // Kernel buffer to read data
+   struct list_head *ptr;     // Kernel Linked List 
+   struct mp2_task_struct *entry; // Kernel Linked List
+   // Checking if the offset is correct
+   if (*data > 0){
+      printk(KERN_INFO "\nRead offset issue\n");
+      return 0;
+   }
+   printk(KERN_INFO "\nRead function called\n");
+  
+   buf = (char *) kmalloc(count,GFP_KERNEL);    // Allocating kernel memory and checking if properly allocated
+   if (!buf){
+      printk(KERN_INFO "Unable to allocate buffer!!\n");
+       return -ENOMEM;
+   }
+      
+   copied = 0;
+   // Checking id list is empty otherwise, acquiring the lock and iterationg over and writing list values into the buffer.
+   spin_lock(&mr_lock);
+   if (!list_empty(&test_head)){
+      
+        list_for_each_safe(pos, q, & mp2_linked_list){
+            entry= list_entry(pos, struct mp2_task_struct, mp2_list);
+            len += scnprintf(buf+len,count-len,"%d: %lu, %lu\n",entry->pid,entry->period_ms, entry->duration_ms);
+
+        }
+
+     
+    }
+    spin_unlock(&mr_lock);
+
+
+   // Sending data to user buffer from kernel buffer
+   copied = simple_read_from_buffer(buffer,count,data,buf,len);
+   if (copied < 0){
+      return -EFAULT;
+   }
+   kfree(buf);
+   return copied ;
+}
+
 int procfile_write(struct file *file, const char *buffer, 
                       unsigned long count, void *data)
 {
@@ -432,12 +480,9 @@ int procfile_write(struct file *file, const char *buffer,
 }
 
 static const struct file_operations status_proc_fops = {
-  .owner = THIS_MODULE,
-  .open = status_proc_open,
-  .read = seq_read, // This simplifies the reading process
+  .owner = THIS_MODULE, 
+  .read = procfile_read, // This simplifies the reading process
   .write = procfile_write, // Implement our own writing method
-  .llseek = seq_lseek,
-  .release = single_release,
 };
 
 
