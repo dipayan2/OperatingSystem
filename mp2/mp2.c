@@ -17,7 +17,7 @@
 #include <linux/sched.h>
 #include <linux/spinlock.h>
 #include <linux/string.h>
-#include <linux/kthread.h>  // for threads
+#include <linux/kthread.h>  // for thread
 #include <linux/mm.h>
 #include <linux/delay.h>
 
