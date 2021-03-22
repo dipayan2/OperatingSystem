@@ -141,7 +141,7 @@ int my_dispatch(void* data){
    struct mp2_task_struct *tmp, *next_task;
    unsigned long period;
    struct sched_param sparam; 
-   long flag = 0;
+   long myflag = 0;
    
 
    while(!kthread_should_stop()){
@@ -165,13 +165,13 @@ int my_dispatch(void* data){
                if (tmp->state == READY && tmp->period_ms < period){
                   next_task = tmp;
                   period = tmp->period_ms;
-                  flag = 1;
+                  myflag = 1;
                }
             }
           }
       spin_unlock(&my_lock);
       printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
-      if(flag == 1){
+      if(myflag == 1){
          if(crt_task != NULL){
             if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
                // Non pre-emption
@@ -206,8 +206,9 @@ int my_dispatch(void* data){
 
          }
       }
+      
+      set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
       printk(KERN_ALERT "Exiting the current state");
-      set_task_state(kernel_task, TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
       schedule(); // Schedule the added task 
 
    }// end of while, it will exit properly
