@@ -36,6 +36,9 @@ struct list_head test_head;
 
 struct kmem_cache* mp2_cache;
 
+long long Cp;
+
+
 struct mp2_task_struct {
   struct task_struct *linux_task;
   struct timer_list wakeup_timer;
@@ -51,6 +54,22 @@ struct mp2_task_struct {
 // To maintiain current running application
 struct mp2_task_struct * current;
 struct task_struct* kernel_task;
+
+int accept_proc(unsigned long period, unsigned long runtime){
+      long long procCost;
+      procCost = ((long long)period*1000000)/(long long)runtime;
+
+      if (Cp+procCost >= 693000){
+         return 0; // Not admitted
+      }
+      else{
+         Cp += procCost;
+         return 1;
+      }
+
+      return 1;
+
+}
 
 void removeLeadSpace(char** ptr){
    while(**ptr != '\0'){
@@ -347,6 +366,8 @@ void handleDeReg(char *kbuf){
           if(current == temp){
              current = NULL;
           }
+
+          Cp -= ((long long)temp->runtime_ms*1000000)/(long long) temp->period_ms;
           list_del(posv);
           del_timer(&temp->wakeup_timer);
           // need to delete the timer too
@@ -485,6 +506,7 @@ int __init mp2_init(void)
 //    // Set up the timer
 //    setup_timer(&my_timer, my_timer_callback, 0);
 //    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
+   Cp = 0;
    current = NULL;
    kernel_task = kthread_create(&dispatch,NULL,"dispatch");
 
