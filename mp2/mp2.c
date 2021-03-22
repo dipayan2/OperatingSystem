@@ -506,7 +506,7 @@ int __init mp2_init(void)
    mp2_file = proc_create("status", 0666, mp2_dir, &mp2_fops);
 
    mp2_cache = kmem_cache_create("mp2_cache", sizeof(struct mp2_task_struct),0,0, (void*)mp2_task_constructor);
-    // Checkpoint 1 done
+//.    // Checkpoint 1 done
 //    // Setup Work Queue
 //    my_wq = create_workqueue("mp1q");
 //    printk(KERN_ALERT "Initializing a module with timer.\n");
@@ -517,7 +517,7 @@ int __init mp2_init(void)
    crt_task = NULL;
    kernel_task = kthread_create(&my_dispatch,NULL,"my_dispatch");
 
-   printk(KERN_ALERT "MP2 MODULE VAL LOADED\n");
+   printk(KERN_ALERT "MP2 MODUL LOADED\n");
    return 0;   
 }
 
