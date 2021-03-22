@@ -387,7 +387,7 @@ int Yield(unsigned int pid){
 
 
 
-static ssize_t mp2_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
+static ssize_t procfile_read (struct file *file, char __user *buffer, size_t count, loff_t *data){
 
      // Data declaration
    int copied;                // Return Value
