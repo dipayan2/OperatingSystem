@@ -397,7 +397,9 @@ int procfile_write(struct file *file, const char *buffer,
     }
 
     /* write data to the buffer */
-    if ( copy_from_user( (void *)&(receive), buffer, buffer_size) ) {
+    long retval;
+    retval = copy_from_user( (void *)&(receive), buffer, buffer_size);
+    if ( retval != 0 ) {
       return -EFAULT;
     }
 
