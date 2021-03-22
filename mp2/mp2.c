@@ -500,7 +500,7 @@ int __init mp2_init(void)
    // Adding the files
    mp2_file = proc_create("status", 0666, mp2_dir, &mp2_fops);
 
-   mp2_cache = kmem_cache_create("mp2_cache", sizeof(struct mp2_task_struct),0,0,NULL,NULL);
+   mp2_cache = kmem_cache_create("mp2_cache", sizeof(struct mp2_task_struct),0,0);
 //    // Checkpoint 1 done
 //    // Setup Work Queue
 //    my_wq = create_workqueue("mp1q");
