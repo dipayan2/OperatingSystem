@@ -517,7 +517,7 @@ int __init mp2_init(void)
    current = NULL;
    kernel_task = kthread_create(&dispatch,NULL,"dispatch");
 
-   printk(KERN_ALERT "MP2 MODULE  LOADED\n");
+   printk(KERN_ALERT "MP2 MODULE VAL LOADED\n");
    return 0;   
 }
 
