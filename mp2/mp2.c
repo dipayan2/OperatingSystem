@@ -105,13 +105,15 @@ void my_timer_callback(unsigned long data) {
    printk(KERN_ALERT "Entering lock of timer\n");
    spin_lock_irqsave(&my_lock, state_save);
    //spin_lock(&my_lock);
-   list_for_each_safe(pos, q, &test_head){
-      tmp= list_entry(pos, struct mp2_task_struct, list);
-      printk(KERN_ALERT "Timer looping through list\n");
-      if (tmp->pid == data){
-         torun_task = tmp;
-         torun_task->state = READY;
-         flag = 1;
+   if(!list_empty(&test_head)){
+      list_for_each_safe(pos, q, &test_head){
+         tmp= list_entry(pos, struct mp2_task_struct, list);
+         printk(KERN_ALERT "Timer looping through list\n");
+         if (tmp->pid == data){
+            torun_task = tmp;
+            torun_task->state = READY;
+            flag = 1;
+         }
       }
    }
    //spin_unlock(&my_lock);
@@ -154,16 +156,18 @@ int my_dispatch(void* data){
       
       spin_lock(&my_lock);
       // Find the task to run
-         list_for_each_safe(pos, q, &test_head){
+          if(!list_empty(&test_head)){
+            list_for_each_safe(pos, q, &test_head){
 
-            tmp= list_entry(pos, struct mp2_task_struct, list);
-            // printk(KERN_INFO "Freeing List\n");
-            if (tmp->state == READY && tmp->period_ms < period){
-               next_task = tmp;
-               period = tmp->period_ms;
-               flag = 1;
+               tmp= list_entry(pos, struct mp2_task_struct, list);
+               // printk(KERN_INFO "Freeing List\n");
+               if (tmp->state == READY && tmp->period_ms < period){
+                  next_task = tmp;
+                  period = tmp->period_ms;
+                  flag = 1;
+               }
             }
-         }
+          }
       spin_unlock(&my_lock);
       printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
       if(flag == 1){
@@ -316,6 +320,7 @@ void handleYield(char *kbuf){
    } // read all the data
 
    spin_lock(&my_lock);
+    if(!list_empty(&test_head)){
    list_for_each_safe(pos, q, &test_head){
       temp= list_entry(pos, struct mp2_task_struct, list);
       if (temp->pid == t_pid){
@@ -323,6 +328,7 @@ void handleYield(char *kbuf){
          flag = 1;
       }
    }
+    }
    spin_unlock(&my_lock);
    // Do work of Yield
    if (flag == 0){
@@ -381,24 +387,26 @@ void handleDeReg(char *kbuf){
    // Just remove from the list
 
    spin_lock(&my_lock);
-   list_for_each_safe(posv, qv, &test_head){
+    if(!list_empty(&test_head)){
+      list_for_each_safe(posv, qv, &test_head){
 
-		 temp= list_entry(posv, struct mp2_task_struct, list);
-       if (temp->pid == t_pid){
-          // found a task to remove
-          if(crt_task == temp){
-             crt_task = NULL;
-          }
+         temp= list_entry(posv, struct mp2_task_struct, list);
+         if (temp->pid == t_pid){
+            // found a task to remove
+            if(crt_task == temp){
+               crt_task = NULL;
+            }
 
-          Cp -= ((long long)temp->runtime_ms*1000000)/(long long) temp->period_ms;
-          list_del(posv);
-          del_timer(&temp->wakeup_timer);
-          // need to delete the timer too
-          printk(KERN_ALERT "\nDeleted Pid : %d and cpu_time\n", temp->pid);
-          kmem_cache_free(mp2_cache,temp);
-          flag = 1;
-       }
-	}
+            Cp -= ((long long)temp->runtime_ms*1000000)/(long long) temp->period_ms;
+            list_del(posv);
+            del_timer(&temp->wakeup_timer);
+            // need to delete the timer too
+            printk(KERN_ALERT "\nDeleted Pid : %d and cpu_time\n", temp->pid);
+            kmem_cache_free(mp2_cache,temp);
+            flag = 1;
+         }
+      }
+    }
    spin_unlock(&my_lock);
 
    if (flag == 0){
