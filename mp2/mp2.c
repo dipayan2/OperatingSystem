@@ -96,7 +96,7 @@ void removeLeadSpace(char** ptr){
  * 
  * **/
 void my_timer_callback(unsigned long data) {
-   printk(KERN_ALERT "This line is timer _ handler \n");
+   printk(KERN_ALERT "This line is timer _ handler %lu \n", data );
    struct list_head *pos, *q;
    struct mp2_task_struct *tmp, *torun_task;
    int flag = 0;
