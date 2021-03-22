@@ -34,6 +34,8 @@ enum task_state {READY = 0, RUNNING = 1, SLEEPING = 2};
 
 struct list_head test_head;
 
+struct kmem_cache* mp2_cache;
+
 struct mp2_task_struct {
   struct task_struct *linux_task;
   struct timer_list wakeup_timer;
@@ -214,7 +216,7 @@ void handleRegistration(char *kbuf){
    comp_time = readVal[2];
 
    // Need to use kmem. for now using kmallloo
-   task_inp = (struct mp2_task_struct *) kmalloc(sizeof(struct mp2_task_struct),GFP_KERNEL);
+   task_inp = kmem_cache_alloc(mp2_cache,GFP_KERNEL);
    if (!task_inp){
       printk(KERN_INFO "Unable to allocate pid_inp memory\n");
       return ;
@@ -349,7 +351,7 @@ void handleDeReg(char *kbuf){
           del_timer(&temp->wakeup_timer);
           // need to delete the timer too
           printk(KERN_INFO "\nDeleted Pid : %d and cpu_time\n", temp->pid);
-          kfree(temp);
+          kmem_cache_free(mp2_cache,temp);
           flag = 1;
        }
 	}
@@ -474,6 +476,8 @@ int __init mp2_init(void)
    mp2_dir = proc_mkdir("mp2", NULL);
    // Adding the files
    mp2_file = proc_create("status", 0666, mp2_dir, &mp2_fops);
+
+   mp2_cache = kmem_cache_create("mp2_cache", sizeof(struct mp2_task_struct),0,0,NULL,NULL);
 //    // Checkpoint 1 done
 //    // Setup Work Queue
 //    my_wq = create_workqueue("mp1q");
@@ -503,6 +507,7 @@ void __exit mp2_exit(void)
     struct list_head *pos, *q;
     struct mp2_task_struct *tmp;
 
+   kthread_stop(kernel_task);
    spin_lock(&my_lock);
    if(!list_empty(&test_head)){
          list_for_each_safe(pos, q, &test_head){
@@ -510,7 +515,8 @@ void __exit mp2_exit(void)
             tmp= list_entry(pos, struct mp2_task_struct, list);
             // printk(KERN_INFO "Freeing List\n");
             list_del(pos);
-            kfree(tmp);
+            del_timer(&tmp->wakeup_timer);
+            kmem_cache_free(mp2_cache,tmp);
          }
     }
    spin_unlock(&my_lock);
@@ -520,6 +526,8 @@ void __exit mp2_exit(void)
 //    printk(KERN_ALERT "removing timer\n");
  
 //    // Removing the directory and files
+  
+   kmem_cache_destroy(mp2_cache);
    remove_proc_entry("status", mp2_dir);
    remove_proc_entry("mp2", NULL);
 
