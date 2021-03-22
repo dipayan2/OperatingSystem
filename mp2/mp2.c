@@ -98,7 +98,7 @@ void removeLeadSpace(char** ptr){
 void my_timer_callback(unsigned long data) {
    printk(KERN_ALERT "This line is timer _ handler \n");
    struct list_head *pos, *q;
-   struct mp2_task_struct *tmp;
+   struct mp2_task_struct *tmp, *torun_task;
    int flag = 0;
    unsigned long state_save;
    // Make the current PID , READY
@@ -107,8 +107,8 @@ void my_timer_callback(unsigned long data) {
       tmp= list_entry(pos, struct mp2_task_struct, list);
 
       if (tmp->pid == data){
-         task = tmp;
-         task->state = READY;
+         torun_task = tmp;
+         torun_task->state = READY;
          flag = 1;
       }
    }
