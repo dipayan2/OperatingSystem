@@ -100,9 +100,9 @@ void my_timer_callback(unsigned long data) {
    struct list_head *pos, *q;
    struct mp2_task_struct *tmp, *torun_task;
    int flag = 0;
-   unsigned long state_save;
+   //unsigned long state_save;
    // Make the current PID , READY
-   spin_lock_irqsave(&my_lock, state_save);
+   spin_lock(&my_lock);
    list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp2_task_struct, list);
 
@@ -112,7 +112,7 @@ void my_timer_callback(unsigned long data) {
          flag = 1;
       }
    }
-   spin_unlock_irqrestore(&my_lock, state_save);
+   spin_unlock(&my_lock);
 
    if(flag == 0){
       // No process here
