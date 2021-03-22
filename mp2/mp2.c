@@ -506,7 +506,7 @@ int __init mp2_init(void)
    mp2_file = proc_create("status", 0666, mp2_dir, &mp2_fops);
 
    mp2_cache = kmem_cache_create("mp2_cache", sizeof(struct mp2_task_struct),0,0, (void*)mp2_task_constructor);
-//    // Checkpoint 1 done
+    // Checkpoint 1 done
 //    // Setup Work Queue
 //    my_wq = create_workqueue("mp1q");
 //    printk(KERN_ALERT "Initializing a module with timer.\n");
@@ -563,7 +563,7 @@ void __exit mp2_exit(void)
    printk(KERN_ALERT "MP2 MODULE UNLOADED\n");
 }
 
-// Loading and unloading the kernel modules
+// Loading bnew and unloading the kernel modules
 module_init(mp2_init);
 module_exit(mp2_exit);
 
