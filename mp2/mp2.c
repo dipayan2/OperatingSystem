@@ -177,7 +177,7 @@ int my_dispatch(void* data){
                sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
 
                crt_task = next_task;
-               printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid)
+               printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid);
 
 
             }
