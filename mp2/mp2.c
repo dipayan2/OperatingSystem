@@ -189,7 +189,7 @@ int my_dispatch(void* data){
             sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
             wake_up_process(next_task->linux_task); // wakes up the next process
             crt_task = next_task;
-            printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid)
+            printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid);
 
          }
       }
