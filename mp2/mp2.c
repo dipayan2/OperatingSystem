@@ -68,7 +68,7 @@ struct task_struct* kernel_task;
 
 int accept_proc(unsigned long period, unsigned long runtime){
       long long procCost;
-      procCost = ((long long)period*1000000)/(long long)runtime;
+      procCost = ((long long)runtime*1000000)/(long long)period;
 
       if (Cp+procCost >= 693000){
          return 0; // Not admitted
@@ -275,6 +275,7 @@ void handleRegistration(char *kbuf){
    tperiod = readVal[1];
    comp_time = readVal[2];
    if (accept_proc(tperiod,comp_time) == 0){
+
       return;
    }
    // Need to use kmem. for now using kmallloo
