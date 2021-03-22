@@ -102,10 +102,11 @@ void my_timer_callback(unsigned long data) {
    int flag = 0;
    //unsigned long state_save;
    // Make the current PID , READY
+   printk(KERN_ALERT "Entering lock of timer\n");
    spin_lock(&my_lock);
    list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp2_task_struct, list);
-
+      printk(KERN_ALERT "Timer looping through list\n");
       if (tmp->pid == data){
          torun_task = tmp;
          torun_task->state = READY;
@@ -113,11 +114,13 @@ void my_timer_callback(unsigned long data) {
       }
    }
    spin_unlock(&my_lock);
+   printk(KERN_ALERT "Finished looping\n");
 
    if(flag == 0){
       // No process here
       return;
    }
+   printk(KERN_ALERT "Timer Calling dispatcher\n");
    wake_up_process(kernel_task);
   
 }
