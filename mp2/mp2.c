@@ -128,7 +128,7 @@ void my_timer_callback(unsigned long data) {
  * 
  * **/
 
-int my_dispatch(void ){
+int my_dispatch(void* data){
    struct list_head *pos, *q;
    struct mp2_task_struct *tmp, *next_task;
    unsigned long period;
