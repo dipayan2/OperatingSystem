@@ -161,7 +161,7 @@ int my_dispatch(void* data){
             list_for_each_safe(pos, q, &test_head){
 
                tmp= list_entry(pos, struct mp2_task_struct, list);
-               // printk(KERN_INFO "Freeing List\n");
+                printk(KERN_INFO "[Disp]Looping List PID : %d\n",tmp->pid);
                if (tmp->state == READY && tmp->period_ms < period){
                   next_task = tmp;
                   period = tmp->period_ms;
