@@ -54,7 +54,7 @@ struct mp2_task_struct {
 
 
 // To maintiain current running application
-struct mp2_task_struct *current;
+struct mp2_task_struct* current;
 struct task_struct* kernel_task;
 
 int accept_proc(unsigned long period, unsigned long runtime){
