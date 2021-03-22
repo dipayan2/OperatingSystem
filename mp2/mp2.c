@@ -20,6 +20,7 @@
 #include <linux/kthread.h>  // for thread
 #include <linux/mm.h>
 #include <linux/delay.h>
+#include <linux/mutex.h>
 
 #include "mp2_given.h"
 #define MAX_PERIOD 1000000
@@ -104,7 +105,7 @@ void my_timer_callback(unsigned long data) {
    // Make the current PID , READY
    printk(KERN_ALERT "Entering lock of timer\n");
   // spin_lock_irqsave(&my_lock, state_save);
-   spin_lock(&my_lock);
+   mutex_lock(&my_lock);
    if(!list_empty(&test_head)){
       list_for_each_safe(pos, q, &test_head){
          tmp= list_entry(pos, struct mp2_task_struct, list);
@@ -117,7 +118,7 @@ void my_timer_callback(unsigned long data) {
          }
       }
    }
-   spin_unlock(&my_lock);
+   mutex_unlock(&my_lock);
    //spin_unlock_irqrestore(&my_lock, state_save);
    printk(KERN_ALERT "Finished looping\n");
 
@@ -155,7 +156,7 @@ int my_dispatch(void* data){
       }
 
       printk(KERN_ALERT "[Disp] before the lock");
-      spin_lock(&my_lock);
+      mutex_lock(&my_lock);
       // Find the task to run
           if(!list_empty(&test_head)){
             list_for_each_safe(pos, q, &test_head){
@@ -169,7 +170,7 @@ int my_dispatch(void* data){
                }
             }
           }
-      spin_unlock(&my_lock);
+      mutex_unlock(&my_lock);
       printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
       if(myflag == 1){
          if(crt_task != NULL){
@@ -279,9 +280,9 @@ void handleRegistration(char *kbuf){
 
 
    // Add to list should be within lock
-   spin_lock(&my_lock);
+   mutex_lock(&my_lock);
    list_add(&(task_inp->list),&test_head);
-   spin_unlock(&my_lock);
+   mutex_unlock(&my_lock);
 
    return;
    
@@ -325,7 +326,7 @@ void handleYield(char *kbuf){
       idx += 1;
    } // read all the data
 
-   spin_lock(&my_lock);
+   mutex_lock(&my_lock);
     if(!list_empty(&test_head)){
    list_for_each_safe(pos, q, &test_head){
       temp= list_entry(pos, struct mp2_task_struct, list);
@@ -335,7 +336,7 @@ void handleYield(char *kbuf){
       }
    }
     }
-   spin_unlock(&my_lock);
+   mutex_unlock(&my_lock);
    // Do work of Yield
    if (flag == 0){
       return;
@@ -392,7 +393,7 @@ void handleDeReg(char *kbuf){
    // need to stop the timer, but let's not do that yet!!
    // Just remove from the list
 
-   spin_lock(&my_lock);
+   mutex_lock(&my_lock);
     if(!list_empty(&test_head)){
       list_for_each_safe(posv, qv, &test_head){
 
@@ -413,7 +414,7 @@ void handleDeReg(char *kbuf){
          }
       }
     }
-   spin_unlock(&my_lock);
+   mutex_unlock(&my_lock);
 
    if (flag == 0){
       return;
@@ -489,7 +490,7 @@ static ssize_t mp2_read (struct file *file, char __user *buffer, size_t count, l
       
    copied = 0;
    // Checking id list is empty otherwise, acquiring the lock and iterationg over and writing list values into the buffer.
-   spin_lock(&my_lock);
+   mutex_lock(&my_lock);
    if (!list_empty(&test_head)){
 
       list_for_each(ptr,&test_head){
@@ -500,7 +501,7 @@ static ssize_t mp2_read (struct file *file, char __user *buffer, size_t count, l
       }
       
    }
-   spin_unlock(&my_lock);
+   mutex_unlock(&my_lock);
 
 
    // Sending data to user buffer from kernel buffer
@@ -569,7 +570,7 @@ void __exit mp2_exit(void)
     struct mp2_task_struct *tmp;
 
    kthread_stop(kernel_task);
-   spin_lock(&my_lock);
+   mutex_lock(&my_lock);
    if(!list_empty(&test_head)){
          list_for_each_safe(pos, q, &test_head){
 
@@ -580,7 +581,7 @@ void __exit mp2_exit(void)
             kmem_cache_free(mp2_cache,tmp);
          }
     }
-   spin_unlock(&my_lock);
+   mutex_unlock(&my_lock);
    printk(KERN_ALERT "List Freed\n");
 
 //     // Removing the timer 
