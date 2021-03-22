@@ -31,9 +31,9 @@ MODULE_DESCRIPTION("CS-423 MP2");
 
 /* LOCKING VARIABLE*/
 static DEFINE_SPINLOCK(my_spin);
+static DEFINE_MUTEX(my_lock);
 
-mutex_t my_lock;
-mutex_init(&my_lock, NULL, NULL);
+
 
 enum task_state {READY = 0, RUNNING = 1, SLEEPING = 2}; 
 
