@@ -201,6 +201,7 @@ int my_dispatch(void* data){
 
          }
       }
+      printk(KERN_ALERT "Exiting the current state")
       set_current_state(TASK_INTERRUPTIBLE); // Allow the kernel thread to sleep
       schedule(); // Schedule the added task 
 
