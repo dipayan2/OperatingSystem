@@ -141,13 +141,14 @@ int my_dispatch(void* data){
 
    while(!kthread_should_stop()){
       period = MAX_PERIOD;
-
+      printk(KERN_ALERT "[Disp] Enter the loop\n")
       if(crt_task != NULL && crt_task->state == SLEEPING){
          sparam.sched_priority=0;
          sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
          crt_task = NULL;
       }
 
+      printk(KERN_ALERT "[Disp] Set the current task to NULL if sleeping");
       spin_lock(&my_lock);
       // Find the task to run
          list_for_each_safe(pos, q, &test_head){
@@ -161,7 +162,7 @@ int my_dispatch(void* data){
             }
          }
       spin_unlock(&my_lock);
-
+      printk(KERN_ALERT "Found the next task to run : %d\n",next_task->pid);
       if(flag == 1){
          if(crt_task != NULL){
             if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
