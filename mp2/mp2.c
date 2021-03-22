@@ -59,7 +59,7 @@ void mp2_task_constructor(void *buf, int size)
 
 
 // To maintiain current running application
-struct mp2_task_struct* current;
+struct mp2_task_struct* current_task;
 struct task_struct* kernel_task;
 
 int accept_proc(unsigned long period, unsigned long runtime){
@@ -139,10 +139,10 @@ int dispatch(){
    while(!kthread_should_stop()){
       period = MAX_PERIOD;
 
-      if(current != NULL && current->state == SLEEPING){
+      if(current_task != NULL && current_task->state == SLEEPING){
          sparam.sched_priority=0;
-         sched_setscheduler(current->linux_task, SCHED_NORMAL, &sparam);
-         current = NULL;
+         sched_setscheduler(current_task->linux_task, SCHED_NORMAL, &sparam);
+         current_task = NULL;
       }
 
       spin_lock(&my_lock);
@@ -160,8 +160,8 @@ int dispatch(){
       spin_unlock(&my_lock);
 
       if(flag == 1){
-         if(current != NULL){
-            if (current->period_ms <= next_task->period_ms && current->state == RUNNING){
+         if(current_task != NULL){
+            if (current_task->period_ms <= next_task->period_ms && current_task->state == RUNNING){
                // Non pre-emption
                next_task->state = READY;
             }
@@ -172,11 +172,11 @@ int dispatch(){
                sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
                wake_up_process(next_task->linux_task); // wakes up the next process
 
-               current->state = READY;
+               current_task->state = READY;
                sparam.sched_priority = 0;
-               sched_setscheduler(current->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
+               sched_setscheduler(current_task->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
 
-               current = next_task;
+               current_task = next_task;
 
 
             }
@@ -187,7 +187,7 @@ int dispatch(){
             sparam.sched_priority=99;
             sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
             wake_up_process(next_task->linux_task); // wakes up the next process
-            current = next_task;
+            current_task = next_task;
 
          }
       }
@@ -370,8 +370,8 @@ void handleDeReg(char *kbuf){
 		 temp= list_entry(posv, struct mp2_task_struct, list);
        if (temp->pid == t_pid){
           // found a task to remove
-          if(current == temp){
-             current = NULL;
+          if(current_task == temp){
+             current_task = NULL;
           }
 
           Cp -= ((long long)temp->runtime_ms*1000000)/(long long) temp->period_ms;
@@ -514,7 +514,7 @@ int __init mp2_init(void)
 //    setup_timer(&my_timer, my_timer_callback, 0);
 //    mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
    Cp = 0;
-   current = NULL;
+   current_task = NULL;
    kernel_task = kthread_create(&dispatch,NULL,"dispatch");
 
    printk(KERN_ALERT "MP2 MODULE VAL LOADED\n");
