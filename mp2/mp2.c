@@ -18,6 +18,8 @@
 #include <linux/spinlock.h>
 #include <linux/string.h>
 #include <linux/kthread.h>  // for threads
+#include <linux/mm.h>
+#include <linux/delay.h>
 
 #include "mp2_given.h"
 #define MAX_PERIOD 1000000
