@@ -380,11 +380,11 @@ void handleYield(char *kbuf){
    //printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
    *sleep_task->state = SLEEPING;
    deadline = *sleep_task->period_ms - *sleep_task->runtime_ms;
-   set_task_state(*sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
-   mod_timer(sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
+   set_task_state((*sleep_task)->linux_task, TASK_UNINTERRUPTIBLE);
+   mod_timer(&(*sleep_task)->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
   
    sparam.sched_priority=0; 
-   sched_setscheduler(*sleep_task->linux_task, SCHED_NORMAL,&sparam);
+   sched_setscheduler((*sleep_task)->linux_task, SCHED_NORMAL,&sparam);
    wake_up_process(kernel_task); 
    return;
 }
