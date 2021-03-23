@@ -153,7 +153,7 @@ int my_dispatch(void* data){
    while(!kthread_should_stop()){
       period = MAX_PERIOD;
       if (crt_task != NULL){
-         printk(KERN_ALERT "[Disp] Starting task\n",crt_task->pid);
+         printk(KERN_ALERT "[Disp] Starting task %d\n",crt_task->pid);
       }
      // printk(KERN_ALERT "[Disp] Enter the loop\n");
       if(crt_task != NULL && crt_task->state == SLEEPING){
