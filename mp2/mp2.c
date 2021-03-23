@@ -367,7 +367,7 @@ void handleYield(char *kbuf){
       temp= list_entry(pos, struct mp2_task_struct, list);
       if (temp->pid == t_pid){
          temp->state = SLEEPING;
-         *sleep_task = temp;
+         sleep_task = temp;
          flag = 1;
       }
    }
@@ -379,13 +379,14 @@ void handleYield(char *kbuf){
    }
    printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
    //printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
-   *sleep_task->state = SLEEPING;
-   deadline = *sleep_task->period_ms - *sleep_task->runtime_ms;
-   set_task_state(*sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
-   mod_timer(sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
+   sleep_task->state = SLEEPING;
+   deadline = sleep_task->period_ms - sleep_task->runtime_ms;
+   printk(KERN_ALERT" The deadline for %d is  %lu\n", sleep_task->pid, deadline);
+   set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
+   mod_timer(&sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
   
    sparam.sched_priority=0; 
-   sched_setscheduler(*sleep_task->linux_task, SCHED_NORMAL,&sparam);
+   sched_setscheduler(sleep_task->linux_task, SCHED_NORMAL,&sparam);
    wake_up_process(kernel_task); 
    return;
 }
