@@ -334,7 +334,7 @@ void handleYield(char *kbuf){
 
 // List data structure 
    struct list_head *pos, *q;
-   struct mp2_task_struct *temp, **sleep_task;
+   struct mp2_task_struct *temp, *sleep_task;
    struct sched_param sparam; 
    int flag = 0;
    unsigned long deadline;
