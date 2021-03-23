@@ -67,7 +67,7 @@ void mp2_task_constructor(void *buf, int size)
 
 
 // To maintiain current running application
-struct mp2_task_struct* crt_task;
+struct mp2_task_struct* crt_task; // current pinter
 struct task_struct* kernel_task;
 
 int accept_proc(unsigned long period, unsigned long runtime){
@@ -163,11 +163,8 @@ int my_dispatch(void* data){
    while(!kthread_should_stop()){
 
        period = MAX_PERIOD;
-       init_tsk = crt_task;
-   //    if (crt_task != NULL){
-   //       printk(KERN_ALERT "[Disp] Starting task %d and state %d\n",crt_task->pid, crt_task->state);
-   //    }
-   //   // printk(KERN_ALERT "[Disp] Enter the loop\n");
+       //init_tsk = crt_task;
+
       if(crt_task != NULL && crt_task->state == SLEEPING){
          sparam.sched_priority=0;
          sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
@@ -239,9 +236,9 @@ int my_dispatch(void* data){
       }
       
      // if (crt_task != NULL){
-        if (init_tsk != NULL && crt_task!= NULL && init_tsk->pid == crt_task->pid && cswitch==1){
-            printk(KERN_ALERT "Something funny going on Dispatcher\n");
-        }
+      //   if (init_tsk != NULL && crt_task!= NULL && init_tsk->pid == crt_task->pid && cswitch==1){
+      //       printk(KERN_ALERT "Something funny going on Dispatcher\n");
+      //   }
          set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
          schedule(); // Schedule the added task 
        
