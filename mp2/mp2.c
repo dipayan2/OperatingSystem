@@ -207,7 +207,7 @@ int my_dispatch(void* data){
                //printk(KERN_ALERT "[Disp]  pre-emption : %d  waking %d\n", crt_task->pid, next_task->pid);
                next_task->state = RUNNING;
                wake_up_process(next_task->linux_task); 
-               sparam.sched_priority=99;
+               sparam.sched_priority=98;
                sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
               // wakes up the next process
                //printk(KERN_ALERT "[Disp] pre-emption  Waking up the %d from %d\n",next_task->pid, crt_task->pid);
@@ -229,7 +229,7 @@ int my_dispatch(void* data){
            // printk(KERN_ALERT "[Disp] No executing task setting  %d\n", next_task->pid);
             next_task->state = RUNNING;
             wake_up_process(next_task->linux_task); // wakes up the next process
-            sparam.sched_priority=99;
+            sparam.sched_priority=98;
             sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
             crt_task = next_task;
             // printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid);
@@ -381,18 +381,18 @@ void handleYield(char *kbuf){
    }
    printk(KERN_ALERT "Yield task %d to state : %d\n",sleep_task->pid, sleep_task->state);
    //printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
-   sleep_task->state = SLEEPING;
-   deadline = sleep_task->period_ms - sleep_task->runtime_ms;
-   printk(KERN_ALERT" The deadline for %d is  %lu\n", sleep_task->pid, deadline);
-   set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
-   mod_timer(&sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
+   crt_task->state = SLEEPING;
+   deadline = crt_task->period_ms - crt_task->runtime_ms;
+   printk(KERN_ALERT" The deadline for %d is  %lu\n", crt_task->pid, deadline);
+   set_task_state(crt_task->linux_task, TASK_UNINTERRUPTIBLE);
+   mod_timer(&crt_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
   
    sparam.sched_priority=0; 
-   sched_setscheduler(sleep_task->linux_task, SCHED_NORMAL,&sparam);
+   sched_setscheduler(crt_task->linux_task, SCHED_NORMAL,&sparam);
    //wake_up_process(kernel_task); 
    wake_up_process(kernel_task); // wakes up the next process
-   // sparam.sched_priority=99;
-   // sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
+   sparam.sched_priority=99;
+   sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
    schedule();
    return;
 }
