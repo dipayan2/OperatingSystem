@@ -139,6 +139,9 @@ void my_timer_callback(unsigned long data) {
    printk(KERN_ALERT "Timer %lu Calling dispatcher it is state\n",data);
    struct sched_param sparam; 
    wake_up_process(kernel_task);
+   sparam.sched_priority=99;
+   sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
+   schedule();
 }
 
 /**
@@ -149,17 +152,18 @@ void my_timer_callback(unsigned long data) {
 
 int my_dispatch(void* data){
    struct list_head *pos, *q;
-   struct mp2_task_struct *tmp, *next_task;
+   struct mp2_task_struct *tmp, *next_task, *init_tsk;
    unsigned long period;
    struct sched_param sparam; 
    long myflag = 0;
-   long validFlag = 0;
+   long cswitch = 1;
 
    
 
    while(!kthread_should_stop()){
 
-   //    period = MAX_PERIOD;
+       period = MAX_PERIOD;
+       init_tsk = crt_task;
    //    if (crt_task != NULL){
    //       printk(KERN_ALERT "[Disp] Starting task %d and state %d\n",crt_task->pid, crt_task->state);
    //    }
@@ -196,6 +200,7 @@ int my_dispatch(void* data){
                // Non pre-emption
                //printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
                next_task->state = READY;
+               cswitch = 0;
               
             }
             else{
@@ -234,11 +239,12 @@ int my_dispatch(void* data){
       }
       
      // if (crt_task != NULL){
+        if (init_tsk != NULL && crt_task!= NULL && init_tsk->pid == crt_task->pid && cswitch==1){
+            printk(KERN_ALERT "Something funny going on Dispatcher\n");
+        }
          set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
-         if (crt_task != NULL){
-         printk(KERN_ALERT "[Disp]Exiting the current running PID : %d, and state %d\n", crt_task->pid, crt_task->state);
-         }
          schedule(); // Schedule the added task 
+       
     
          
       
@@ -386,9 +392,9 @@ void handleYield(char *kbuf){
    
 
    wake_up_process(kernel_task); // wakes up the next process
-   // sparam.sched_priority=99;
-   // sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
-   // schedule();
+   sparam.sched_priority=99;
+   sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
+   schedule();
    return;
 }
 
