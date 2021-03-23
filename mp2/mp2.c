@@ -376,7 +376,7 @@ void handleYield(char *kbuf){
    if (flag == 0){
       return;
    }
-   printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
+   printk(KERN_ALERT "Yield task %d to sleep\n",(*sleep_task)->pid);
    //printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
    (*sleep_task)->state = SLEEPING;
    deadline = (*sleep_task)->period_ms - (*sleep_task)->runtime_ms;
