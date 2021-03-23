@@ -115,9 +115,8 @@ void my_timer_callback(unsigned long data) {
          tmp= list_entry(pos, struct mp2_task_struct, list);
          printk(KERN_ALERT "Timer looping through list %d \n",tmp->pid);
          if (tmp->pid == data){
-            torun_task = tmp;
+            tmp-> state = READY;
             printk(KERN_ALERT "Timer  Found list pid :%d\n",data);
-            torun_task->state = READY;
             flag = 1;
          }
       }
@@ -144,11 +143,12 @@ void my_timer_callback(unsigned long data) {
 
 int my_dispatch(void* data){
    struct list_head *pos, *q;
-   struct mp2_task_struct *tmp, *next_task;
+   struct mp2_task_struct *tmp, **next_task;
    unsigned long period;
    struct sched_param sparam; 
    long myflag = 0;
    long validFlag = 0;
+   *next_task = NULL;
    
 
    while(!kthread_should_stop()){
@@ -176,9 +176,9 @@ int my_dispatch(void* data){
                  }
                 printk(KERN_INFO "[Disp]Looping List PID : %d\n",tmp->pid);
                if (tmp->state == READY && tmp->period_ms < period){
-                  next_task = tmp;
+                  *next_task = tmp;
                   period = tmp->period_ms;
-                  printk(KERN_INFO "Selected next task is %d\n", next_task->pid );
+                  printk(KERN_INFO "Selected next task is %d\n", *next_task->pid );
                   myflag = 1;
                }
             }
@@ -193,16 +193,16 @@ int my_dispatch(void* data){
             if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
                // Non pre-emption
                //printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
-               next_task->state = READY;
+               *next_task->state = READY;
               
             }
             else{
                // pre-emption
                //printk(KERN_ALERT "[Disp]  pre-emption : %d  waking %d\n", crt_task->pid, next_task->pid);
-               next_task->state = RUNNING;
+               *next_task->state = RUNNING;
                sparam.sched_priority=99;
-               sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
-               wake_up_process(next_task->linux_task); // wakes up the next process
+               sched_setscheduler(*next_task->linux_task, SCHED_FIFO, &sparam);
+               wake_up_process(*next_task->linux_task); // wakes up the next process
                //printk(KERN_ALERT "[Disp] pre-emption  Waking up the %d from %d\n",next_task->pid, crt_task->pid);
                if(crt_task != NULL && crt_task->linux_task != NULL){
                   crt_task->state = READY;
@@ -211,7 +211,7 @@ int my_dispatch(void* data){
                }
 
               // printk(KERN_ALERT "[Disp]atcher Scheduled %d and removed %d\n ", crt_task->pid, next_task->pid);
-               crt_task = next_task;
+               crt_task = *next_task;
                
 
 
@@ -220,15 +220,15 @@ int my_dispatch(void* data){
          else{
             // No executing task
            // printk(KERN_ALERT "[Disp] No executing task setting  %d\n", next_task->pid);
-            next_task->state = RUNNING;
+            *next_task->state = RUNNING;
             sparam.sched_priority=99;
     
-            if (next_task!= NULL && next_task->linux_task != NULL){
-               sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
+            if (*next_task!= NULL && *next_task->linux_task != NULL){
+               sched_setscheduler(*next_task->linux_task, SCHED_FIFO, &sparam);
               // printk(KERN_ALERT "[Disp] Scheduled  setting  %d\n", next_task->pid);
-               wake_up_process(next_task->linux_task); // wakes up the next process
+               wake_up_process(*next_task->linux_task); // wakes up the next process
             }
-            crt_task = next_task;
+            crt_task = *next_task;
             // printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid);
 
          }
@@ -333,7 +333,7 @@ void handleYield(char *kbuf){
 
 // List data structure 
    struct list_head *pos, *q;
-   struct mp2_task_struct *temp, *sleep_task;
+   struct mp2_task_struct *temp, **sleep_task;
    struct sched_param sparam; 
    int flag = 0;
    unsigned long deadline;
@@ -365,7 +365,8 @@ void handleYield(char *kbuf){
    list_for_each_safe(pos, q, &test_head){
       temp= list_entry(pos, struct mp2_task_struct, list);
       if (temp->pid == t_pid){
-         sleep_task = temp;
+         temp->state = SLEEPING;
+         *sleep_task = temp;
          flag = 1;
       }
    }
@@ -377,13 +378,13 @@ void handleYield(char *kbuf){
    }
    printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
    //printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
-   sleep_task->state = SLEEPING;
-   deadline = sleep_task->period_ms - sleep_task->runtime_ms;
-   set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
-   mod_timer(&sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
+   *sleep_task->state = SLEEPING;
+   deadline = *sleep_task->period_ms - *sleep_task->runtime_ms;
+   set_task_state(*sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
+   mod_timer(sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
   
    sparam.sched_priority=0; 
-   sched_setscheduler(sleep_task->linux_task, SCHED_NORMAL,&sparam);
+   sched_setscheduler(*sleep_task->linux_task, SCHED_NORMAL,&sparam);
    wake_up_process(kernel_task); 
    return;
 }
