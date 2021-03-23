@@ -24,6 +24,9 @@
 
 #include "mp2_given.h"
 #define MAX_PERIOD 1000000
+#define READY 0
+#define RUNNING 1
+#define SLEEPING 2
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("dipayan2");
@@ -35,7 +38,8 @@ static DEFINE_MUTEX(my_lock);
 
 
 
-enum task_state {READY = 0, RUNNING = 1, SLEEPING = 2}; 
+
+//enum task_state {READY = 0, RUNNING = 1, SLEEPING = 2}; 
 
 
 struct list_head test_head;
@@ -53,7 +57,7 @@ struct mp2_task_struct {
   unsigned long period_ms;
   unsigned long runtime_ms;
   unsigned long deadline_jiff;
-  enum task_state state;
+  int state;
 };
 
 void mp2_task_constructor(void *buf, int size)
@@ -115,9 +119,9 @@ void my_timer_callback(unsigned long data) {
          tmp= list_entry(pos, struct mp2_task_struct, list);
          printk(KERN_ALERT "Timer looping through list %d \n",tmp->pid);
          if (tmp->pid == data){
-            tmp-> state = READY;
+            tmp->state = READY;
 
-            printk(KERN_ALERT "Timer  Found list pid :%d\n",data);
+            printk(KERN_ALERT "Timer  Found list pid :%d and state : %d\n",tmp->pid,tmp->state);
 
             flag = 1;
          }
@@ -132,7 +136,7 @@ void my_timer_callback(unsigned long data) {
       // No process here
       return;
    }
-   printk(KERN_ALERT "Timer %lu Calling dispatcher it is ready\n",data);
+   printk(KERN_ALERT "Timer %lu Calling dispatcher it is state\n",data);
    wake_up_process(kernel_task);
   
 }
@@ -155,13 +159,13 @@ int my_dispatch(void* data){
    while(!kthread_should_stop()){
       period = MAX_PERIOD;
       if (crt_task != NULL){
-         printk(KERN_ALERT "[Disp] Starting task %d\n",crt_task->pid);
+         printk(KERN_ALERT "[Disp] Starting task %d and state %d\n",crt_task->pid, crt_task->state);
       }
      // printk(KERN_ALERT "[Disp] Enter the loop\n");
       if(crt_task != NULL && crt_task->state == SLEEPING){
          sparam.sched_priority=0;
          sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
-         printk(KERN_ALERT "[Disp] Starting task %d\n",crt_task->pid);
+         printk(KERN_ALERT "[Disp] Starting task %d and state : %d\n",crt_task->pid, crt_task->state);
          crt_task = NULL;
       }
 
@@ -175,11 +179,11 @@ int my_dispatch(void* data){
                  if (crt_task != NULL && crt_task->pid == tmp->pid){
                     validFlag = 1;
                  }
-                printk(KERN_INFO "[Disp]Looping List PID : %d\n",tmp->pid);
+                printk(KERN_INFO "[Disp]Looping List PID : %d and state %d\n",tmp->pid, tmp->state);
                if (tmp->state == READY && tmp->period_ms < period){
                   next_task = tmp;
                   period = tmp->period_ms;
-                  printk(KERN_INFO "Selected next task is %d\n", next_task->pid );
+                  printk(KERN_INFO "Selected next task is %d and state %d\n", next_task->pid, next_task->states );
                   myflag = 1;
                }
             }
@@ -238,7 +242,7 @@ int my_dispatch(void* data){
      // if (crt_task != NULL){
          set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
          if (crt_task != NULL){
-         printk(KERN_ALERT "[Disp]Exiting the current running PID : %d\n", crt_task->pid);
+         printk(KERN_ALERT "[Disp]Exiting the current running PID : %d, and state %d\n", crt_task->pid, crt_task->state);
          }
          schedule(); // Schedule the added task 
     
@@ -377,7 +381,7 @@ void handleYield(char *kbuf){
    if (flag == 0){
       return;
    }
-   printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
+   printk(KERN_ALERT "Yield task %d to state : %d\n",sleep_task->pid, sleep_task->state);
    //printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
    sleep_task->state = SLEEPING;
    deadline = sleep_task->period_ms - sleep_task->runtime_ms;
