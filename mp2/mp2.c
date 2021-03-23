@@ -391,8 +391,8 @@ void handleYield(char *kbuf){
    sched_setscheduler(sleep_task->linux_task, SCHED_NORMAL,&sparam);
    //wake_up_process(kernel_task); 
    wake_up_process(kernel_task); // wakes up the next process
-   sparam.sched_priority=99;
-   sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
+   // sparam.sched_priority=99;
+   // sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
    schedule();
    return;
 }
