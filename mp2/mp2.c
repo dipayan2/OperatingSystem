@@ -174,7 +174,7 @@ int my_dispatch(void* data){
                if (tmp->state == READY && tmp->period_ms < period){
                   next_task = tmp;
                   period = tmp->period_ms;
-                  printk(KERN_INFO "Selected next task is %d\n", next_task->pid )
+                  printk(KERN_INFO "Selected next task is %d\n", next_task->pid );
                   myflag = 1;
                }
             }
