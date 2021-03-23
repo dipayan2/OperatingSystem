@@ -463,7 +463,7 @@ void handleDeReg(char *kbuf){
    if (flag == 0){
       return;
    }
-   //wake_up_process(kernel_task);
+   wake_up_process(kernel_task);
    
    return;
 
