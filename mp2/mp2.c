@@ -159,7 +159,7 @@ int my_dispatch(void* data){
       if(crt_task != NULL && crt_task->state == SLEEPING){
          sparam.sched_priority=0;
          sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
-         printk(KERN_ALERT "[Disp] Starting task\n",crt_task->pid);
+         printk(KERN_ALERT "[Disp] Starting task %d\n",crt_task->pid);
          crt_task = NULL;
       }
 
@@ -363,6 +363,7 @@ void handleYield(char *kbuf){
       return;
    }
    printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
+   printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
    sleep_task->state = SLEEPING;
    deadline = sleep_task->period_ms - sleep_task->runtime_ms;
    set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
