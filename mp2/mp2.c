@@ -220,13 +220,13 @@ int my_dispatch(void* data){
          else{
             // No executing task
            // printk(KERN_ALERT "[Disp] No executing task setting  %d\n", next_task->pid);
-            *next_task->state = RUNNING;
+            (*next_task)->state = RUNNING;
             sparam.sched_priority=99;
     
             if (*next_task!= NULL && *next_task->linux_task != NULL){
-               sched_setscheduler(*next_task->linux_task, SCHED_FIFO, &sparam);
+               sched_setscheduler((*next_task)->linux_task, SCHED_FIFO, &sparam);
               // printk(KERN_ALERT "[Disp] Scheduled  setting  %d\n", next_task->pid);
-               wake_up_process(*next_task->linux_task); // wakes up the next process
+               wake_up_process((*next_task)->linux_task); // wakes up the next process
             }
             crt_task = *next_task;
             // printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid);
@@ -378,8 +378,8 @@ void handleYield(char *kbuf){
    }
    printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
    //printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
-   *sleep_task->state = SLEEPING;
-   deadline = *sleep_task->period_ms - *sleep_task->runtime_ms;
+   (*sleep_task)->state = SLEEPING;
+   deadline = (*sleep_task)->period_ms - (*sleep_task)->runtime_ms;
    set_task_state((*sleep_task)->linux_task, TASK_UNINTERRUPTIBLE);
    mod_timer(&(*sleep_task)->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
   
