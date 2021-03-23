@@ -178,7 +178,7 @@ int my_dispatch(void* data){
                if (tmp->state == READY && tmp->period_ms < period){
                   *next_task = tmp;
                   period = tmp->period_ms;
-                  printk(KERN_INFO "Selected next task is %d\n", *next_task->pid );
+                  printk(KERN_INFO "Selected next task is %d\n", (*next_task)->pid );
                   myflag = 1;
                }
             }
@@ -193,7 +193,7 @@ int my_dispatch(void* data){
             if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
                // Non pre-emption
                //printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
-               *next_task->state = READY;
+               (*next_task)->state = READY;
               
             }
             else{
@@ -201,8 +201,8 @@ int my_dispatch(void* data){
                //printk(KERN_ALERT "[Disp]  pre-emption : %d  waking %d\n", crt_task->pid, next_task->pid);
                *next_task->state = RUNNING;
                sparam.sched_priority=99;
-               sched_setscheduler(*next_task->linux_task, SCHED_FIFO, &sparam);
-               wake_up_process(*next_task->linux_task); // wakes up the next process
+               sched_setscheduler((*next_task)->linux_task, SCHED_FIFO, &sparam);
+               wake_up_process((*next_task)->linux_task); // wakes up the next process
                //printk(KERN_ALERT "[Disp] pre-emption  Waking up the %d from %d\n",next_task->pid, crt_task->pid);
                if(crt_task != NULL && crt_task->linux_task != NULL){
                   crt_task->state = READY;
