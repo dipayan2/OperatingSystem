@@ -190,7 +190,7 @@ int my_dispatch(void* data){
       }
       if(myflag == 1){
          if(crt_task != NULL){
-            if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
+            if (crt_task->period_ms <= (*next_task)->period_ms && crt_task->state == RUNNING){
                // Non pre-emption
                //printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
                (*next_task)->state = READY;
@@ -199,7 +199,7 @@ int my_dispatch(void* data){
             else{
                // pre-emption
                //printk(KERN_ALERT "[Disp]  pre-emption : %d  waking %d\n", crt_task->pid, next_task->pid);
-               *next_task->state = RUNNING;
+               (*next_task)->state = RUNNING;
                sparam.sched_priority=99;
                sched_setscheduler((*next_task)->linux_task, SCHED_FIFO, &sparam);
                wake_up_process((*next_task)->linux_task); // wakes up the next process
@@ -223,7 +223,7 @@ int my_dispatch(void* data){
             (*next_task)->state = RUNNING;
             sparam.sched_priority=99;
     
-            if (*next_task!= NULL && *next_task->linux_task != NULL){
+            if (*next_task!= NULL && (*next_task)->linux_task != NULL){
                sched_setscheduler((*next_task)->linux_task, SCHED_FIFO, &sparam);
               // printk(KERN_ALERT "[Disp] Scheduled  setting  %d\n", next_task->pid);
                wake_up_process((*next_task)->linux_task); // wakes up the next process
