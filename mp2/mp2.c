@@ -139,10 +139,6 @@ void my_timer_callback(unsigned long data) {
    printk(KERN_ALERT "Timer %lu Calling dispatcher it is state\n",data);
    struct sched_param sparam; 
    wake_up_process(kernel_task);
-   // sparam.sched_priority=99;
-   // sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
-   // schedule();
-  
 }
 
 /**
@@ -207,7 +203,7 @@ int my_dispatch(void* data){
                //printk(KERN_ALERT "[Disp]  pre-emption : %d  waking %d\n", crt_task->pid, next_task->pid);
                next_task->state = RUNNING;
                wake_up_process(next_task->linux_task); 
-               sparam.sched_priority=98;
+               sparam.sched_priority=99;
                sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
               // wakes up the next process
                //printk(KERN_ALERT "[Disp] pre-emption  Waking up the %d from %d\n",next_task->pid, crt_task->pid);
@@ -229,7 +225,7 @@ int my_dispatch(void* data){
            // printk(KERN_ALERT "[Disp] No executing task setting  %d\n", next_task->pid);
             next_task->state = RUNNING;
             wake_up_process(next_task->linux_task); // wakes up the next process
-            sparam.sched_priority=98;
+            sparam.sched_priority=99;
             sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
             crt_task = next_task;
             // printk(KERN_ALERT "Dispatcher Scheduled %d\n", crt_task->pid);
@@ -384,11 +380,10 @@ void handleYield(char *kbuf){
    sleep_task->state = SLEEPING;
    deadline = sleep_task->period_ms - sleep_task->runtime_ms;
    printk(KERN_ALERT" The deadline for %d is  %lu\n", sleep_task->pid, deadline);
-   set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
+   
    mod_timer(&sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
-  
-   sparam.sched_priority=0; 
-   sched_setscheduler(sleep_task->linux_task, SCHED_NORMAL,&sparam);
+   set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
+   
 
    wake_up_process(kernel_task); // wakes up the next process
    // sparam.sched_priority=99;
@@ -463,9 +458,7 @@ void handleDeReg(char *kbuf){
    if (flag == 0){
       return;
    }
-   wake_up_process(kernel_task);
-   
-   return;
+
 
 }
 
