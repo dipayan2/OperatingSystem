@@ -148,6 +148,7 @@ int my_dispatch(void* data){
    unsigned long period;
    struct sched_param sparam; 
    long myflag = 0;
+   long validFlag = 0;
    
 
    while(!kthread_should_stop()){
@@ -170,6 +171,9 @@ int my_dispatch(void* data){
             list_for_each_safe(pos, q, &test_head){
 
                tmp= list_entry(pos, struct mp2_task_struct, list);
+                 if (crt_task != NULL && crt_task->pid == tmp->pid){
+                    validFlag = 1;
+                 }
                 printk(KERN_INFO "[Disp]Looping List PID : %d\n",tmp->pid);
                if (tmp->state == READY && tmp->period_ms < period){
                   next_task = tmp;
@@ -181,6 +185,9 @@ int my_dispatch(void* data){
           }
       mutex_unlock(&my_lock);
       //printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
+      if (validFlag == 0){
+         crt_task = NULL;
+      }
       if(myflag == 1){
          if(crt_task != NULL){
             if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
@@ -227,11 +234,17 @@ int my_dispatch(void* data){
          }
       }
       
-      set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
-      if (crt_task != NULL){
+     // if (crt_task != NULL){
+         set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
+         if (crt_task != NULL){
          printk(KERN_ALERT "[Disp]Exiting the current running PID : %d\n", crt_task->pid);
-      }
-      schedule(); // Schedule the added task 
+         }
+         schedule(); // Schedule the added task 
+    
+         
+      
+      //}
+
 
    }// end of while, it will exit properly
 
@@ -363,7 +376,7 @@ void handleYield(char *kbuf){
       return;
    }
    printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
-   printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
+   //printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
    sleep_task->state = SLEEPING;
    deadline = sleep_task->period_ms - sleep_task->runtime_ms;
    set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
