@@ -141,7 +141,7 @@ void my_timer_callback(unsigned long data) {
    wake_up_process(kernel_task);
    sparam.sched_priority=99;
    sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
-   schedule();
+   // schedule();
 }
 
 /**
@@ -394,7 +394,7 @@ void handleYield(char *kbuf){
    wake_up_process(kernel_task); // wakes up the next process
    sparam.sched_priority=99;
    sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
-   schedule();
+   // schedule();
    return;
 }
 
