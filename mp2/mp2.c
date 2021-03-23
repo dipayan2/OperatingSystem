@@ -139,9 +139,9 @@ void my_timer_callback(unsigned long data) {
    printk(KERN_ALERT "Timer %lu Calling dispatcher it is state\n",data);
    struct sched_param sparam; 
    wake_up_process(kernel_task);
-   // sparam.sched_priority=99;
-   // sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
-   // schedule();
+   sparam.sched_priority=99;
+   sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
+   schedule();
   
 }
 
@@ -381,19 +381,19 @@ void handleYield(char *kbuf){
    }
    printk(KERN_ALERT "Yield task %d to state : %d\n",sleep_task->pid, sleep_task->state);
    //printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
-   crt_task->state = SLEEPING;
-   deadline = crt_task->period_ms - crt_task->runtime_ms;
-   printk(KERN_ALERT" The deadline for %d is  %lu\n", crt_task->pid, deadline);
-   set_task_state(crt_task->linux_task, TASK_UNINTERRUPTIBLE);
-   mod_timer(&crt_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
+   sleep_task->state = SLEEPING;
+   deadline = sleep_task->period_ms - sleep_task->runtime_ms;
+   printk(KERN_ALERT" The deadline for %d is  %lu\n", sleep_task->pid, deadline);
+   set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
+   mod_timer(&sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
   
    sparam.sched_priority=0; 
-   sched_setscheduler(crt_task->linux_task, SCHED_NORMAL,&sparam);
-   //wake_up_process(kernel_task); 
+   sched_setscheduler(sleep_task->linux_task, SCHED_NORMAL,&sparam);
+
    wake_up_process(kernel_task); // wakes up the next process
-   // sparam.sched_priority=99;
-   // sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
-   // schedule();
+   sparam.sched_priority=99;
+   sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
+   schedule();
    return;
 }
 
