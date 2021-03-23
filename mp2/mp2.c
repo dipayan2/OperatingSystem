@@ -139,9 +139,9 @@ void my_timer_callback(unsigned long data) {
    printk(KERN_ALERT "Timer %lu Calling dispatcher it is state\n",data);
    struct sched_param sparam; 
    wake_up_process(kernel_task);
-   sparam.sched_priority=99;
-   sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
-   schedule();
+   // sparam.sched_priority=99;
+   // sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
+   // schedule();
   
 }
 
@@ -391,9 +391,9 @@ void handleYield(char *kbuf){
    sched_setscheduler(sleep_task->linux_task, SCHED_NORMAL,&sparam);
 
    wake_up_process(kernel_task); // wakes up the next process
-   sparam.sched_priority=99;
-   sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
-   schedule();
+   // sparam.sched_priority=99;
+   // sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
+   // schedule();
    return;
 }
 
