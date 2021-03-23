@@ -279,7 +279,7 @@ void handleRegistration(char *kbuf){
    pid_inp = (int)readVal[0];
    tperiod = readVal[1];
    comp_time = readVal[2];
-   printk(KERN_ALERT "Register %d, %lu , %lu ");
+   printk(KERN_ALERT "Register %d, %lu , %lu \n",pid_inp,tperiod,comp_time);
    if (accept_proc(tperiod,comp_time) == 0){
 
       return;
