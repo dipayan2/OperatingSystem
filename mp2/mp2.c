@@ -100,13 +100,13 @@ void removeLeadSpace(char** ptr){
  * 
  * **/
 void my_timer_callback(unsigned long data) {
-   printk(KERN_ALERT "This line is timer _ handler %lu \n", data );
+   //printk(KERN_ALERT "This line is timer _ handler %lu \n", data );
    struct list_head *pos, *q;
    struct mp2_task_struct *tmp, *torun_task;
    int flag = 0;
    unsigned long state_save;
    // Make the current PID , READY
-   printk(KERN_ALERT "Entering lock of timer\n");
+   //printk(KERN_ALERT "Entering lock of timer\n");
   // spin_lock_irqsave(&my_lock, state_save);
    mutex_lock(&my_lock);
    spin_lock(&my_spin);
@@ -131,7 +131,7 @@ void my_timer_callback(unsigned long data) {
       // No process here
       return;
    }
-   printk(KERN_ALERT "Timer %lu Calling dispatcher\n",data);
+   printk(KERN_ALERT "Timer %lu Calling dispatcher it is ready\n",data);
    wake_up_process(kernel_task);
   
 }
@@ -152,15 +152,15 @@ int my_dispatch(void* data){
 
    while(!kthread_should_stop()){
       period = MAX_PERIOD;
-      printk(KERN_ALERT "[Disp] Enter the loop\n");
+     // printk(KERN_ALERT "[Disp] Enter the loop\n");
       if(crt_task != NULL && crt_task->state == SLEEPING){
          sparam.sched_priority=0;
          sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
-         printk(KERN_ALERT "[Disp] Set the current task : %d to NULL if sleeping\n",crt_task->pid);
+         //printk(KERN_ALERT "[Disp] Set the current task : %d to NULL if sleeping\n",crt_task->pid);
          crt_task = NULL;
       }
 
-      printk(KERN_ALERT "[Disp] before the lock");
+      //printk(KERN_ALERT "[Disp] before the lock");
       mutex_lock(&my_lock);
       // Find the task to run
           if(!list_empty(&test_head)){
@@ -176,30 +176,30 @@ int my_dispatch(void* data){
             }
           }
       mutex_unlock(&my_lock);
-      printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
+      //printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
       if(myflag == 1){
          if(crt_task != NULL){
             if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
                // Non pre-emption
-               printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
+               //printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
                next_task->state = READY;
               
             }
             else{
                // pre-emption
-               printk(KERN_ALERT "[Disp]  pre-emption : %d  waking %d\n", crt_task->pid, next_task->pid);
+               //printk(KERN_ALERT "[Disp]  pre-emption : %d  waking %d\n", crt_task->pid, next_task->pid);
                next_task->state = RUNNING;
                sparam.sched_priority=99;
                sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
                wake_up_process(next_task->linux_task); // wakes up the next process
-               printk(KERN_ALERT "[Disp] pre-emption  Waking up the %d from %d\n",next_task->pid, crt_task->pid);
+               //printk(KERN_ALERT "[Disp] pre-emption  Waking up the %d from %d\n",next_task->pid, crt_task->pid);
                if(crt_task != NULL && crt_task->linux_task != NULL){
                   crt_task->state = READY;
                   sparam.sched_priority = 0;
                   sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
                }
 
-               printk(KERN_ALERT "[Disp]atcher Scheduled %d and removed %d\n ", crt_task->pid, next_task->pid);
+              // printk(KERN_ALERT "[Disp]atcher Scheduled %d and removed %d\n ", crt_task->pid, next_task->pid);
                crt_task = next_task;
                
 
@@ -208,13 +208,13 @@ int my_dispatch(void* data){
          }
          else{
             // No executing task
-            printk(KERN_ALERT "[Disp] No executing task setting  %d\n", next_task->pid);
+           // printk(KERN_ALERT "[Disp] No executing task setting  %d\n", next_task->pid);
             next_task->state = RUNNING;
             sparam.sched_priority=99;
     
             if (next_task!= NULL && next_task->linux_task != NULL){
                sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
-               printk(KERN_ALERT "[Disp] Scheduled  setting  %d\n", next_task->pid);
+              // printk(KERN_ALERT "[Disp] Scheduled  setting  %d\n", next_task->pid);
                wake_up_process(next_task->linux_task); // wakes up the next process
             }
             crt_task = next_task;
@@ -224,7 +224,9 @@ int my_dispatch(void* data){
       }
       
       set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
-      printk(KERN_ALERT "[Disp]Exiting the current state");
+      if (crt_task != NULL){
+         printk(KERN_ALERT "[Disp]Exiting the current running PID : %d\n", crt_task->pid);
+      }
       schedule(); // Schedule the added task 
 
    }// end of while, it will exit properly
@@ -236,7 +238,7 @@ int my_dispatch(void* data){
 void handleRegistration(char *kbuf){
 
    // Data for reading the input
-   printk(KERN_ALERT "Handle Registration \n");
+   //printk(KERN_ALERT "Handle Registration \n");
    int idx = 0;
    char* token;
    long readVal[5];
@@ -274,6 +276,7 @@ void handleRegistration(char *kbuf){
    pid_inp = (int)readVal[0];
    tperiod = readVal[1];
    comp_time = readVal[2];
+   printk(KERN_ALERT "Register %d, %lu , %lu ")
    if (accept_proc(tperiod,comp_time) == 0){
 
       return;
@@ -355,7 +358,7 @@ void handleYield(char *kbuf){
    if (flag == 0){
       return;
    }
-   //  printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
+   printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
    sleep_task->state = SLEEPING;
    deadline = sleep_task->period_ms - sleep_task->runtime_ms;
    set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
