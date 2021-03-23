@@ -385,7 +385,10 @@ void handleYield(char *kbuf){
   
    sparam.sched_priority=0; 
    sched_setscheduler(sleep_task->linux_task, SCHED_NORMAL,&sparam);
-   wake_up_process(kernel_task); 
+   //wake_up_process(kernel_task); 
+   wake_up_process(kernel_task); // wakes up the next process
+   sparam.sched_priority=99;
+   sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
    schedule();
    return;
 }
@@ -456,7 +459,7 @@ void handleDeReg(char *kbuf){
    if (flag == 0){
       return;
    }
-   wake_up_process(kernel_task);
+   //wake_up_process(kernel_task);
    
    return;
 
