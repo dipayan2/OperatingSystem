@@ -152,11 +152,14 @@ int my_dispatch(void* data){
 
    while(!kthread_should_stop()){
       period = MAX_PERIOD;
+      if (crt_task != NULL){
+         printk(KERN_ALERT "[Disp] Starting task\n",crt_task->pid);
+      }
      // printk(KERN_ALERT "[Disp] Enter the loop\n");
       if(crt_task != NULL && crt_task->state == SLEEPING){
          sparam.sched_priority=0;
          sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
-         //printk(KERN_ALERT "[Disp] Set the current task : %d to NULL if sleeping\n",crt_task->pid);
+         printk(KERN_ALERT "[Disp] Starting task\n",crt_task->pid);
          crt_task = NULL;
       }
 
@@ -358,7 +361,7 @@ void handleYield(char *kbuf){
    if (flag == 0){
       return;
    }
-   printk(KERN_ALERT "Yield task %d to sleep\n",sleep_task->pid);
+   printk(KERN_ALERT "Yield task %d to sleep, %d\n",sleep_task->pid);
    sleep_task->state = SLEEPING;
    deadline = sleep_task->period_ms - sleep_task->runtime_ms;
    set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
