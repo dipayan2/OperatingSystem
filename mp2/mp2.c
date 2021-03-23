@@ -158,11 +158,12 @@ int my_dispatch(void* data){
    
 
    while(!kthread_should_stop()){
-      period = MAX_PERIOD;
-      if (crt_task != NULL){
-         printk(KERN_ALERT "[Disp] Starting task %d and state %d\n",crt_task->pid, crt_task->state);
-      }
-     // printk(KERN_ALERT "[Disp] Enter the loop\n");
+
+   //    period = MAX_PERIOD;
+   //    if (crt_task != NULL){
+   //       printk(KERN_ALERT "[Disp] Starting task %d and state %d\n",crt_task->pid, crt_task->state);
+   //    }
+   //   // printk(KERN_ALERT "[Disp] Enter the loop\n");
       if(crt_task != NULL && crt_task->state == SLEEPING){
          sparam.sched_priority=0;
          sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
@@ -177,9 +178,6 @@ int my_dispatch(void* data){
             list_for_each_safe(pos, q, &test_head){
 
                tmp= list_entry(pos, struct mp2_task_struct, list);
-                 if (crt_task != NULL && crt_task->pid == tmp->pid){
-                    validFlag = 1;
-                 }
                 printk(KERN_INFO "[Disp]Looping List PID : %d and state %d\n",tmp->pid, tmp->state);
                if (tmp->state == READY && tmp->period_ms < period){
                   next_task = tmp;
@@ -191,9 +189,7 @@ int my_dispatch(void* data){
           }
       mutex_unlock(&my_lock);
       //printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
-      if (validFlag == 0){
-         crt_task = NULL;
-      }
+
       if(myflag == 1){
          if(crt_task != NULL){
             if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
@@ -211,11 +207,11 @@ int my_dispatch(void* data){
                sched_setscheduler(next_task->linux_task, SCHED_FIFO, &sparam);
               // wakes up the next process
                //printk(KERN_ALERT "[Disp] pre-emption  Waking up the %d from %d\n",next_task->pid, crt_task->pid);
-               if(crt_task != NULL && crt_task->linux_task != NULL){
+              // if(crt_task != NULL && crt_task->linux_task != NULL){
                   crt_task->state = READY;
                   sparam.sched_priority = 0;
                   sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
-               }
+               //}
 
               // printk(KERN_ALERT "[Disp]atcher Scheduled %d and removed %d\n ", crt_task->pid, next_task->pid);
                crt_task = next_task;
@@ -390,6 +386,7 @@ void handleYield(char *kbuf){
    sparam.sched_priority=0; 
    sched_setscheduler(sleep_task->linux_task, SCHED_NORMAL,&sparam);
    wake_up_process(kernel_task); 
+   schedule();
    return;
 }
 
@@ -460,6 +457,7 @@ void handleDeReg(char *kbuf){
       return;
    }
    wake_up_process(kernel_task);
+   
    return;
 
 }
