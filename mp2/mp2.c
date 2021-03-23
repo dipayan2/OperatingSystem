@@ -253,7 +253,10 @@ int my_dispatch(void* data){
    return 0;
 }
 
-
+/***
+ * 
+ * Registration Handler
+*/
 void handleRegistration(char *kbuf){
 
    // Data for reading the input
@@ -323,6 +326,12 @@ void handleRegistration(char *kbuf){
    return;
    
 }
+
+/**
+ * 
+ * Yield Hanlder
+ * 
+ * **/
 
 void handleYield(char *kbuf){
    printk(KERN_ALERT "Handle Yield\n");
@@ -394,6 +403,13 @@ void handleYield(char *kbuf){
    // schedule();
    return;
 }
+
+
+/**
+ * 
+ * De registration Handler
+ * 
+ * **/
 
 void handleDeReg(char *kbuf){
    printk(KERN_ALERT "Handle Dereg\n");
