@@ -138,9 +138,9 @@ void my_timer_callback(unsigned long data) {
    }
    printk(KERN_ALERT "Timer %lu Calling dispatcher it is state\n",data);
    struct sched_param sparam; 
-   set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
+  // set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
    wake_up_process(kernel_task);
-   schedule(); 
+   //schedule(); 
  
    // sparam.sched_priority=99;
    // sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
