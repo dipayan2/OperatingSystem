@@ -199,14 +199,14 @@ int my_dispatch(void* data){
          if(crt_task != NULL){
             if (crt_task->period_ms <= next_task->period_ms && crt_task->state == RUNNING){
                // Non pre-emption
-               //printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
+               printk(KERN_ALERT "[Disp] Non pre-emption : %d \n", next_task->pid);
                next_task->state = READY;
                cswitch = 0;
               
             }
             else{
                // pre-emption
-               //printk(KERN_ALERT "[Disp]  pre-emption : %d  waking %d\n", crt_task->pid, next_task->pid);
+               printk(KERN_ALERT "[Disp]  pre-emption : %d  waking %d\n", crt_task->pid, next_task->pid);
                next_task->state = RUNNING;
                wake_up_process(next_task->linux_task); 
                sparam.sched_priority=99;
@@ -229,7 +229,7 @@ int my_dispatch(void* data){
          }
          else{
             // No executing task
-           // printk(KERN_ALERT "[Disp] No executing task setting  %d\n", next_task->pid);
+            printk(KERN_ALERT "[Disp] No executing task setting  %d\n", next_task->pid);
             next_task->state = RUNNING;
             wake_up_process(next_task->linux_task); // wakes up the next process
             sparam.sched_priority=99;
