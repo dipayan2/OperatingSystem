@@ -242,7 +242,7 @@ int my_dispatch(void* data){
       
      // if (crt_task != NULL){
       //   if (init_tsk != NULL && crt_task!= NULL && init_tsk->pid == crt_task->pid && cswitch==1){
-      //       printk(KERN_ALERT "Something funny going on Dispatcher\n");
+            printk(KERN_ALERT "[Disp] Exiting Dispatcher\n");
       //   }
          set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
          schedule(); // Schedule the added task 
