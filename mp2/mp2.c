@@ -73,15 +73,17 @@ struct task_struct* kernel_task;
 int accept_proc(unsigned long period, unsigned long runtime){
       long long procCost;
       procCost = ((long long)runtime*1000000)/(long long)period;
-
+      spin_lock(&my_spin);
       if (Cp+procCost >= 693000){
+         spin_unlock(&my_spin);
          return 0; // Not admitted
       }
       else{
          Cp += procCost;
+         spin_unlock(&my_spin);
          return 1;
       }
-
+      spin_unlock(&my_spin);
       return 1;
 
 }
