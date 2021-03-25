@@ -169,6 +169,7 @@ int my_dispatch(void* data){
          sparam.sched_priority=0;
          sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
          printk(KERN_ALERT "[Disp] Starting task %d and state : %d\n",crt_task->pid, crt_task->state);
+         set_task_state(crt_task->linux_task, TASK_UNINTERRUPTIBLE);
          crt_task = NULL;
       }
 
@@ -213,6 +214,7 @@ int my_dispatch(void* data){
                   crt_task->state = READY;
                   sparam.sched_priority = 0;
                   sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam); // Add the pre-empted task to the list
+                  set_task_state(crt_task->linux_task, TASK_UNINTERRUPTIBLE);
                //}
 
               // printk(KERN_ALERT "[Disp]atcher Scheduled %d and removed %d\n ", crt_task->pid, next_task->pid);
