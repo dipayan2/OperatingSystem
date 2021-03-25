@@ -195,7 +195,12 @@ int my_dispatch(void* data){
           }
           spin_unlock(&my_spin);
       // mutex_unlock(&my_lock);
-      //printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
+      if (next_task != NULL){
+         printk(KERN_ALERT "[Disp]Found the next task to run : %d\n",next_task->pid);
+      }
+      else{
+         printk(KERN_ALERT "[Disp]No next task found, keep runing the hol dtask");
+      }
 
       if(myflag == 1){
          if(crt_task != NULL){
@@ -241,7 +246,17 @@ int my_dispatch(void* data){
 
          }
       }
-      
+      else{
+         // wakeup the curre{}nt task
+         if(crt_task != NULL){
+            crt_task->state = RUNNING;
+            wake_up_process(crt_task->linux_task);
+            sparam.sched_priority=99;
+            sched_setscheduler(crt_task->linux_task, SCHED_FIFO, &sparam);
+
+         }
+      }
+      printk(KERN_ALERT "[Disp] All task dine");
      // if (crt_task != NULL){
       //   if (init_tsk != NULL && crt_task!= NULL && init_tsk->pid == crt_task->pid && cswitch==1){
          if (crt_task != NULL){
