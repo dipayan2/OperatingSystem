@@ -138,9 +138,9 @@ void my_timer_callback(unsigned long data) {
    }
    printk(KERN_ALERT "Timer %lu Calling dispatcher it is state\n",data);
    struct sched_param sparam; 
-  set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
+  //set_current_state(TASK_UNINTERRUPTIBLE); // Allow the kernel thread to sleep
    wake_up_process(kernel_task);
-   schedule(); 
+  // schedule();  // can't add that
  
    // sparam.sched_priority=99;
    // sched_setscheduler(kernel_task, SCHED_FIFO, &sparam);
@@ -400,7 +400,7 @@ void handleYield(char *kbuf){
    
    mod_timer(&sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
    set_task_state(sleep_task->linux_task, TASK_UNINTERRUPTIBLE);
-   set_current_state(TASK_UNINTERRUPTIBLE);
+  // set_current_state(TASK_UNINTERRUPTIBLE);
 
    wake_up_process(kernel_task); // wakes up the next process
 
@@ -467,7 +467,7 @@ void handleDeReg(char *kbuf){
             if(crt_task == temp){
                crt_task = NULL;
             }
-            set_task_state(temp->linux_task, TASK_UNINTERRUPTIBLE);
+            //set_task_state(temp->linux_task, TASK_UNINTERRUPTIBLE);
             Cp -= ((long long)temp->runtime_ms*1000000)/(long long) temp->period_ms;
             list_del(posv);
             del_timer(&temp->wakeup_timer);
@@ -483,7 +483,7 @@ void handleDeReg(char *kbuf){
    if (flag == 0){
       return;
    }
-   set_current_state(TASK_UNINTERRUPTIBLE);
+   //set_current_state(TASK_UNINTERRUPTIBLE);
    wake_up_process(kernel_task);
    schedule();
 
