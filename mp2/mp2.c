@@ -48,6 +48,8 @@ struct kmem_cache* mp2_cache;
 
 long long Cp;
 
+struct timeval time_val ;
+
 
 struct mp2_task_struct {
   struct task_struct *linux_task;
@@ -57,6 +59,7 @@ struct mp2_task_struct {
   unsigned long period_ms;
   unsigned long runtime_ms;
   unsigned long deadline_jiff;
+  unsigned long long initial_time; 
   int state;
 };
 
@@ -344,6 +347,8 @@ void handleRegistration(char *kbuf){
    task_inp->runtime_ms = comp_time;
    task_inp->linux_task = find_task_by_pid(pid_inp);
    task_inp->state = SLEEPING;
+    do_gettimeofday(&time_val);
+    task_inp->initial_time = time_val.tv_sec * 1000 * 1000 + time_val.tv_usec ;
    setup_timer( &task_inp->wakeup_timer, my_timer_callback, task_inp->pid );
 
 
@@ -370,13 +375,15 @@ void handleYield(char *kbuf){
    char action;
    char *endptr;
    long value;
+   unsigned long time_to_wakeup ;
+  unsigned long long curr_time ; 
 
 // List data structure 
    struct list_head *pos, *q;
    struct mp2_task_struct *temp, *sleep_task;
    struct sched_param sparam; 
    int flag = 0;
-   unsigned long deadline;
+   unsigned long long deadline;
 
 
    while( (token = strsep(&kbuf,",")) != NULL ){
@@ -419,7 +426,10 @@ void handleYield(char *kbuf){
    printk(KERN_ALERT "Yield task %d to state : %d\n",sleep_task->pid, sleep_task->state);
    //printk(KERN_ALERT "Yield Current task now is %d\n",crt_task->pid);
    sleep_task->state = SLEEPING;
-   deadline = sleep_task->period_ms - sleep_task->runtime_ms;
+   do_gettimeofday(&time_val);
+   curr_time = time_val.tv_sec * 1000 * 1000 + time_val.tv_usec ; // in msecs
+   //task->period_ms - (((curr_time - task->initial_time )/1000)%(task->period_ms));
+   deadline = sleep_task->period_ms -(((curr_time - sleep_task->initial_time)/1000)% sleep_task->period_ms);
    printk(KERN_ALERT" The deadline for %d is  %lu\n", sleep_task->pid, deadline);
    
    mod_timer(&sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
