@@ -104,16 +104,16 @@ void removeLeadSpace(char** ptr){
  * 
  * **/
 void my_timer_callback(unsigned long data) {
-   //printk(KERN_ALERT "This line is timer _ handler %lu \n", data );
+   printk(KERN_ALERT "This line is timer _ handler %lu \n", data );
    struct list_head *pos, *q;
    struct mp2_task_struct *tmp;
    int flag = 0;
    unsigned long state_save;
    // Make the current PID , READY
-   //printk(KERN_ALERT "Entering lock of timer\n");
-  // spin_lock_irqsave(&my_lock, state_save);
-   mutex_lock(&my_lock);
-   spin_lock(&my_spin);
+   printk(KERN_ALERT "Entering lock of timer %d\n", data);
+   spin_lock_irqsave(&my_lock, state_save);
+   //mutex_lock(&my_lock);
+  // spin_lock(&my_spin);
    if(!list_empty(&test_head)){
       list_for_each_safe(pos, q, &test_head){
          tmp= list_entry(pos, struct mp2_task_struct, list);
@@ -127,10 +127,10 @@ void my_timer_callback(unsigned long data) {
          }
       }
    }
-  spin_unlock(&my_spin);
-   mutex_unlock(&my_lock);
-  // spin_unlock_irqrestore(&my_lock, state_save);
-   printk(KERN_ALERT "Finished looping\n");
+//  spin_unlock(&my_spin);
+ //  mutex_unlock(&my_lock);
+  spin_unlock_irqrestore(&my_lock, state_save);
+   printk(KERN_ALERT "Finished looping %d\n", data);
 
    if(flag == 0){
       // No process here
