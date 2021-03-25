@@ -167,7 +167,7 @@ int my_dispatch(void* data){
 
        period = MAX_PERIOD;
        //init_tsk = crt_task;
-
+      next_task = NULL;
       if(crt_task != NULL && crt_task->state == SLEEPING){
          sparam.sched_priority=0;
          sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
@@ -227,7 +227,7 @@ int my_dispatch(void* data){
 
             }
          }
-         else{
+         else if (next_task != NULL){
             // No executing task
             printk(KERN_ALERT "[Disp] No executing task setting  %d\n", next_task->pid);
             next_task->state = RUNNING;
