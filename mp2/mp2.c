@@ -485,7 +485,7 @@ void handleDeReg(char *kbuf){
    }
    set_current_state(TASK_UNINTERRUPTIBLE);
    wake_up_process(kernel_task);
-   schedule();
+  // schedule();
 
 }
 
