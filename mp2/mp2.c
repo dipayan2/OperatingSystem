@@ -354,6 +354,7 @@ void handleRegistration(char *kbuf){
     task_inp->initial_time = time_val.tv_sec * 1000 * 1000 + time_val.tv_usec ;
     task_inp->next_period = task_inp->initial_time+task_inp->period_ms*1000;
    setup_timer( &task_inp->wakeup_timer, my_timer_callback, task_inp->pid );
+    mod_timer(&task_inp->wakeup_timer, jiffies + msecs_to_jiffies(task_inp->period_ms));
 
 
    // Add to list should be within lock
