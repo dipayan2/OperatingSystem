@@ -173,13 +173,14 @@ int my_dispatch(void* data){
        period = MAX_PERIOD;
        //init_tsk = crt_task;
       next_task = NULL;
-      // if(crt_task != NULL && crt_task->state == SLEEPING){
-      //    sparam.sched_priority=0;
-      //    sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
-      //    printk(KERN_ALERT "[Disp] Starting task %d and state : %d\n",crt_task->pid, crt_task->state);
-      //    set_task_state(crt_task->linux_task, TASK_UNINTERRUPTIBLE);
-      //    crt_task = NULL;
-      // }
+      myflag = 0;
+      if(crt_task != NULL && crt_task->state == SLEEPING){
+         sparam.sched_priority=0;
+         sched_setscheduler(crt_task->linux_task, SCHED_NORMAL, &sparam);
+         printk(KERN_ALERT "[Disp] Starting task %d and state : %d\n",crt_task->pid, crt_task->state);
+         set_task_state(crt_task->linux_task, TASK_UNINTERRUPTIBLE);
+         crt_task = NULL;
+      }
 
       //printk(KERN_ALERT "[Disp] before the lock");
       // mutex_lock(&my_lock);
