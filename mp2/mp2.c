@@ -434,12 +434,13 @@ void handleYield(char *kbuf){
    sleep_task->state = SLEEPING;
    do_gettimeofday(&time_val);
    curr_time = time_val.tv_sec * 1000 * 1000 + time_val.tv_usec ; // in msecs
-   sleep_task->next_period = sleep_task->next_period + sleep_task->period_ms*1000;
+   
    //task->period_ms - (((curr_time - task->initial_time )/1000)%(task->period_ms));
    deadline = sleep_task->period_ms -(((curr_time - sleep_task->initial_time)/1000)% sleep_task->period_ms);
    if (sleep_task->next_period > (curr_time + (deadline*1000))){
       deadline = (sleep_task->next_period - curr_time)/1000;
    }
+   sleep_task->next_period = sleep_task->next_period + sleep_task->period_ms*1000;
    printk(KERN_ALERT" The deadline for %d is  %lu\n", sleep_task->pid, deadline);
    
    mod_timer(&sleep_task->wakeup_timer, jiffies + msecs_to_jiffies(deadline));
