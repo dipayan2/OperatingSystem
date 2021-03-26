@@ -25,7 +25,7 @@
 #include "mp2_given.h"
 #define MAX_PERIOD 1000000
 #define READY 1
-#define RUNNING 2
+#define RUNNING 1
 #define SLEEPING 0
 
 MODULE_LICENSE("GPL");
