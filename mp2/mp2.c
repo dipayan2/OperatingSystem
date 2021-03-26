@@ -383,7 +383,7 @@ void handleYield(char *kbuf){
    unsigned long long curr_time ; 
    struct timeval time_val ;
 
-// List data structure 
+// Final code
    struct list_head *pos, *q;
    struct mp2_task_struct *temp, *sleep_task;
    struct sched_param sparam; 
