@@ -48,7 +48,7 @@ struct kmem_cache* mp2_cache;
 
 long long Cp;
 
-struct timeval time_val ;
+
 
 
 struct mp2_task_struct {
@@ -60,6 +60,7 @@ struct mp2_task_struct {
   unsigned long runtime_ms;
   unsigned long deadline_jiff;
   unsigned long long initial_time; 
+  unsigned long long next_period;
   int state;
 };
 
@@ -302,6 +303,7 @@ void handleRegistration(char *kbuf){
    long value;
    long tperiod, comp_time;
    int pid_inp;
+   struct timeval time_val ;
 
    // Data for creating and storing the process block
    struct mp2_task_struct *task_inp;
@@ -350,6 +352,7 @@ void handleRegistration(char *kbuf){
    task_inp->state = SLEEPING;
     do_gettimeofday(&time_val);
     task_inp->initial_time = time_val.tv_sec * 1000 * 1000 + time_val.tv_usec ;
+    task_inp->next_period = task_inp->initial_time+task_inp->period_ms*1000;
    setup_timer( &task_inp->wakeup_timer, my_timer_callback, task_inp->pid );
 
 
@@ -377,7 +380,8 @@ void handleYield(char *kbuf){
    char *endptr;
    long value;
    unsigned long time_to_wakeup ;
-  unsigned long long curr_time ; 
+   unsigned long long curr_time ; 
+   struct timeval time_val ;
 
 // List data structure 
    struct list_head *pos, *q;
@@ -429,6 +433,7 @@ void handleYield(char *kbuf){
    sleep_task->state = SLEEPING;
    do_gettimeofday(&time_val);
    curr_time = time_val.tv_sec * 1000 * 1000 + time_val.tv_usec ; // in msecs
+   sleep_task->next_period = sleep_task->next_period + sleep_task->period_ms*1000;
    //task->period_ms - (((curr_time - task->initial_time )/1000)%(task->period_ms));
    deadline = sleep_task->period_ms -(((curr_time - sleep_task->initial_time)/1000)% sleep_task->period_ms);
    printk(KERN_ALERT" The deadline for %d is  %lu\n", sleep_task->pid, deadline);
