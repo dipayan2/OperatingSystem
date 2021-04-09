@@ -24,13 +24,18 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("dipayan2");
 MODULE_DESCRIPTION("CS-423 MP3");
 #define DEBUG 1
+#define BUFFER_BLOCK (128*4*1024)
 
 
 /* LOCKING VARIABLE*/
 static DEFINE_SPINLOCK(my_spin);
 
 //Linked list header
+static struct workqueue_struct *my_wq;
+struct work_struct my_work;
 struct list_head test_head;
+void* my_buffer; // for vmalloc usage
+int init_wq = 0;
 struct mp3_task_struct {
   struct task_struct *linux_task;
   struct list_head list;
@@ -42,6 +47,26 @@ struct mp3_task_struct {
   unsigned long stime;
 };
 
+
+
+
+void memFunction(){
+   return;
+}
+
+void create_workqueue(){
+   init_wq = 1;
+   my_wq = create_workqueue("mp3q");
+   INIT_WORK(&my_work, memFunction); // Attached function to the work
+   queue_work(my_wq, &my_work); 
+}
+
+void delete_workqueue(){
+   flush_workqueue( my_wq );
+   destroy_workqueue( my_wq );
+   init_wq = 0;
+   return;
+}
 
 /***
  * 
@@ -118,6 +143,10 @@ void handleRegistration(char *kbuf){
 
    // Add to list should be within lock
    // Should check if the list is 
+   if (init_wq == 0){
+      create_workqueue();
+   }
+   //create_workqueue();
    spin_lock(&my_spin);
    list_add(&(task_inp->list),&test_head);
    spin_unlock(&my_spin);
@@ -184,8 +213,15 @@ void handleDeReg(char *kbuf){
       }
     }
    spin_unlock(&my_spin);
+   spin_lock(&my_spin);
+   if(list_empty(&test_head)){
+      delete_workqueue();
+   }
+   spin_unlock(&my_spin);
 
 
+   //delete_workqueue();
+   return;
 }
 
 /**
@@ -292,6 +328,11 @@ int __init mp3_init(void)
    printk(KERN_ALERT "MP3 MODULE LOADING\n");
    #endif
    printk(KERN_ALERT "Hello World, this is MP3\n");
+   // Initialize a block of memory using vmalloc
+   my_buffer = vmalloc(BUFFER_BLOCK);
+   if(!my_buffer){
+      printk(KERN_ALERT "Unable to allocate buffer memory");
+   }
    // Initilizing the linked list
    INIT_LIST_HEAD(&test_head);
    // Created the directory
@@ -300,11 +341,11 @@ int __init mp3_init(void)
    mp3_file = proc_create("status", 0666, mp3_dir, & mp3_fops);
    // Checkpoint 1 done
    // Setup Work Queue
-   my_wq = create_workqueue("mp1q");
+   //my_wq = create_workqueue("mp1q");
    printk(KERN_ALERT "Initializing a module with timer.\n");
    // Set up the timer
-   setup_timer(&my_timer, my_timer_callback, 0);
-   mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
+  // setup_timer(&my_timer, my_timer_callback, 0);
+   //mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 
    printk(KERN_ALERT "MP3MODULE LOADED\n");
    return 0;   
@@ -318,10 +359,10 @@ void __exit mp3_exit(void)
    #endif
    printk(KERN_ALERT "Goodbye\n");
    // Removing the timer
-   del_timer(&my_timer);
+  // del_timer(&my_timer);
    //Removing the workqueue
-   flush_workqueue( my_wq );
-   destroy_workqueue( my_wq );
+  // flush_workqueue( my_wq );
+   //destroy_workqueue( my_wq );
    // Remove the list
    struct list_head *pos, *q;
    struct my_pid_data *tmp;
