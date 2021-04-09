@@ -117,12 +117,75 @@ void handleRegistration(char *kbuf){
 
 
    // Add to list should be within lock
+   // Should check if the list is 
    spin_lock(&my_spin);
    list_add(&(task_inp->list),&test_head);
    spin_unlock(&my_spin);
 
    return;
    
+}
+
+
+void handleDeReg(char *kbuf){
+   printk(KERN_ALERT "Handle Dereg\n");
+   int idx = 0;
+   char* token;
+   int t_pid = -1;
+   char action;
+   char *endptr;
+   long value;
+
+   // Data for dereg the task
+   struct list_head *posv, *qv;
+   struct mp3_task_struct *temp;
+   int flag = 0;
+
+   while( (token = strsep(&kbuf," ")) != NULL ){
+      if (idx == 0){
+         action = *token;
+         // printk(KERN_ALERT "This value is %c \n",action);
+      }
+      else if (idx <= 1){
+         removeLeadSpace(&token);
+         //printk(KERN_ALERT "The token : %s\n",token);
+         value = simple_strtol(token, &endptr, 10);
+         if (value == 0 && endptr == token){
+            // printk(KERN_ALERT "Error in long conversion");
+         } 
+         else{
+            // printk(KERN_ALERT "The value is %ld\n", value);
+            t_pid = (int)value;
+            break;
+         }
+         
+      }
+      idx += 1;
+   } // read all the data
+
+   // Do work DeReg
+   // need to stop the timer, but let's not do that yet!!
+   // Just remove from the list
+   // Need to remove the workqueue
+
+   spin_lock(&my_spin);
+    if(!list_empty(&test_head)){
+      list_for_each_safe(posv, qv, &test_head){
+
+         temp= list_entry(posv, struct mp2_task_struct, list);
+         if (temp->pid == t_pid){
+            list_del(posv);
+            
+            // need to delete the timer too
+            printk(KERN_ALERT "\nDeleted Pid : %d and cpu_time\n", temp->pid);
+            kfree(temp);
+            
+         }
+      }
+    }
+   spin_unlock(&my_spin);
+
+
 }
 
 /**
@@ -195,7 +258,7 @@ static ssize_t mp3_read (struct file *file, char __user *buffer, size_t count, l
          entry=list_entry(ptr,struct mp2_task_struct,list);
          //printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
          // Add this entry into the buffer
-         len += scnprintf(buf+len,count-len,"%d: %lu, %lu\n",entry->pid,entry->period_ms, entry->runtime_ms);
+         len += scnprintf(buf+len,count-len,"%dn",entry->pid);
       }
       
    }
