@@ -476,7 +476,7 @@ void handleDeReg(char *kbuf){
    struct mp2_task_struct *temp;
    int flag = 0;
 
-   while( (token = strsep(&kbuf,",")) != NULL ){
+   while( (token = strsep(&kbuf," ")) != NULL ){
       if (idx == 0){
          action = *token;
          // printk(KERN_ALERT "This value is %c \n",action);
