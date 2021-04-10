@@ -24,7 +24,9 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("dipayan2");
 MODULE_DESCRIPTION("CS-423 MP3");
 #define DEBUG 1
+#define PAGE_SIZE 4096
 #define BUFFER_BLOCK (128*4*1024)
+
 
 
 /* LOCKING VARIABLE*/
@@ -34,6 +36,7 @@ static DEFINE_SPINLOCK(my_spin);
 static struct workqueue_struct *my_wq;
 struct work_struct my_work;
 struct list_head test_head;
+static struct timer_list my_timer;
 void* my_buffer; // for vmalloc usage
 int init_wq = 0;
 struct mp3_task_struct {
@@ -48,9 +51,18 @@ struct mp3_task_struct {
 };
 
 
+void my_timer_callback(unsigned long data) {
+  //printk(KERN_ALERT "This line is printed after 5 seconds.\n");
+  // Add job to the queue
+  if (!list_empty(&test_head)){
+     queue_work(my_wq, &my_work); 
+     mod_timer(&my_timer, jiffies + msecs_to_jiffies(50)); // This function ensures that timer is called again in 5 second
+  }
+   return;
+}
 
 
-void memFunction(){
+void memFunction(void){
    return;
 }
 
@@ -59,12 +71,14 @@ void create_workqueue(){
    my_wq = create_workqueue("mp3q");
    INIT_WORK(&my_work, memFunction); // Attached function to the work
    queue_work(my_wq, &my_work); 
+   mod_timer(&my_timer, jiffies + msecs_to_jiffies(50)); 
 }
 
 void delete_workqueue(){
    flush_workqueue( my_wq );
    destroy_workqueue( my_wq );
    init_wq = 0;
+   my_wq = NULL;
    return;
 }
 
@@ -294,7 +308,7 @@ static ssize_t mp3_read (struct file *file, char __user *buffer, size_t count, l
          entry=list_entry(ptr,struct mp2_task_struct,list);
          //printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
          // Add this entry into the buffer
-         len += scnprintf(buf+len,count-len,"%dn",entry->pid);
+         len += scnprintf(buf+len,count-len,"%d\n",entry->pid);
       }
       
    }
@@ -341,10 +355,10 @@ int __init mp3_init(void)
    mp3_file = proc_create("status", 0666, mp3_dir, & mp3_fops);
    // Checkpoint 1 done
    // Setup Work Queue
-   //my_wq = create_workqueue("mp1q");
+   my_wq = NULL;
    printk(KERN_ALERT "Initializing a module with timer.\n");
    // Set up the timer
-  // setup_timer(&my_timer, my_timer_callback, 0);
+   setup_timer(&my_timer, my_timer_callback, 0);
    //mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
 
    printk(KERN_ALERT "MP3MODULE LOADED\n");
@@ -359,10 +373,13 @@ void __exit mp3_exit(void)
    #endif
    printk(KERN_ALERT "Goodbye\n");
    // Removing the timer
-  // del_timer(&my_timer);
+    del_timer(&my_timer);
    //Removing the workqueue
-  // flush_workqueue( my_wq );
-   //destroy_workqueue( my_wq );
+   if (my_wq!= NULL){
+      flush_workqueue( my_wq );
+      destroy_workqueue( my_wq );
+   }
+
    // Remove the list
    struct list_head *pos, *q;
    struct my_pid_data *tmp;
@@ -382,7 +399,8 @@ void __exit mp3_exit(void)
 
     // Removing the timer 
    printk(KERN_ALERT "removing timer\n");
- 
+   // Deleting memory
+   vfree(my_buffer);
    // Removing the directory and files
    remove_proc_entry("status", mp3_dir);
    remove_proc_entry("mp3", NULL);
