@@ -65,7 +65,7 @@ void memFunction(void){
    return;
 }
 
-void create_workqueue(){
+void create_workqueue(void){
    init_wq = 1;
    my_wq = create_workqueue("mp3q");
    INIT_WORK(&my_work, memFunction); // Attached function to the work
@@ -73,7 +73,7 @@ void create_workqueue(){
    mod_timer(&my_timer, jiffies + msecs_to_jiffies(50)); 
 }
 
-void delete_workqueue(){
+void delete_workqueue(void){
    flush_workqueue( my_wq );
    destroy_workqueue( my_wq );
    init_wq = 0;
