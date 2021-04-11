@@ -394,7 +394,7 @@ void __exit mp3_exit(void)
    struct list_head *pos, *q;
    struct my_pid_data *tmp;
 
-   spin_lock(&my_lock);
+   spin_lock(&my_spin);
    if(!list_empty(&test_head)){
          list_for_each_safe(pos, q, &test_head){
 
@@ -404,7 +404,7 @@ void __exit mp3_exit(void)
             kfree(tmp);
          }
     }
-   spin_unlock(&my_lock);
+   spin_unlock(&my_spin);
    printk(KERN_INFO "List Freed\n");
 
     // Removing the timer 
