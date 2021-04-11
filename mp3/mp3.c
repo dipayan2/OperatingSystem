@@ -65,7 +65,7 @@ void memFunction(void){
    return;
 }
 
-int create_workqueue(void){
+int mycreate_workqueue(void){
    init_wq = 1;
    my_wq = create_workqueue("mp3q");
    INIT_WORK(&my_work, memFunction); // Attached function to the work
@@ -74,7 +74,7 @@ int create_workqueue(void){
    return 0;
 }
 
-int delete_workqueue(void){
+int mydelete_workqueue(void){
    flush_workqueue( my_wq );
    destroy_workqueue( my_wq );
    init_wq = 0;
@@ -158,7 +158,7 @@ void handleRegistration(char *kbuf){
    // Add to list should be within lock
    // Should check if the list is 
    if (init_wq == 0){
-      create_workqueue();
+      mycreate_workqueue();
    }
    //create_workqueue();
    spin_lock(&my_spin);
@@ -229,7 +229,7 @@ void handleDeReg(char *kbuf){
    spin_unlock(&my_spin);
    spin_lock(&my_spin);
    if(list_empty(&test_head)){
-      delete_workqueue();
+      mydelete_workqueue();
    }
    spin_unlock(&my_spin);
 
