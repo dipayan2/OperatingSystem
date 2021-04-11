@@ -315,7 +315,7 @@ static ssize_t mp3_read (struct file *file, char __user *buffer, size_t count, l
    if (!list_empty(&test_head)){
 
       list_for_each(ptr,&test_head){
-         entry=list_entry(ptr,struct mp2_task_struct,list);
+         entry=list_entry(ptr,struct mp3_task_struct,list);
          //printk(KERN_INFO "\n PID %d:Time %lu  \n ", entry->my_id,entry->cpu_time);
          // Add this entry into the buffer
          len += scnprintf(buf+len,count-len,"%d\n",entry->pid);
