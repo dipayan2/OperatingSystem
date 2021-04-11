@@ -151,7 +151,7 @@ void handleRegistration(char *kbuf){
    // Allocate things to the  list value
   
    if (get_cpu_use(pid_inp, &min_flt, &maj_flt, &utime, &stime) == -1){
-      printk(KERN_ALERT "Unable to get page details for the task")
+      printk(KERN_ALERT "Unable to get page details for the task");
       kfree(task_inp);
       return;
    }
