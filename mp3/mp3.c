@@ -71,7 +71,7 @@ void my_timer_callback(unsigned long data) {
 }
 
 
-void memFunction(void){
+static void memFunction(void){
    return;
 }
 
