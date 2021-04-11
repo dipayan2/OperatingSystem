@@ -225,7 +225,7 @@ void handleDeReg(char *kbuf){
     if(!list_empty(&test_head)){
       list_for_each_safe(posv, qv, &test_head){
 
-         temp= list_entry(posv, struct mp2_task_struct, list);
+         temp= list_entry(posv, struct mp3_task_struct, list);
          if (temp->pid == t_pid){
             list_del(posv);
             
