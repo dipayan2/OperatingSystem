@@ -392,7 +392,7 @@ void __exit mp3_exit(void)
 
    // Remove the list
    struct list_head *pos, *q;
-   struct my_pid_data *tmp;
+   struct mp3_task_struct *tmp;
 
    spin_lock(&my_spin);
    if(!list_empty(&test_head)){
