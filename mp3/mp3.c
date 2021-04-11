@@ -49,7 +49,17 @@ struct mp3_task_struct {
   unsigned long stime;
 };
 
-
+void removeLeadSpace(char** ptr){
+   while(**ptr != '\0'){
+      if (**ptr == ' '){
+         (*ptr)++;
+      }
+      else{
+         return;
+      }
+   }
+   return;
+}
 void my_timer_callback(unsigned long data) {
   //printk(KERN_ALERT "This line is printed after 5 seconds.\n");
   // Add job to the queue
