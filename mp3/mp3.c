@@ -140,7 +140,7 @@ void handleRegistration(char *kbuf){
 
    // Allocate proc util for taks by PID and add them to the list
    pid_inp = (int)readVal[0];
-   //printk(KERN_ALERT "Register %d, %lu , %lu \n",pid_inp,tperiod,comp_time);
+   printk(KERN_ALERT "Register %d\n",pid_inp);
   
    // Need to use kmem. for now using kmallloo
    task_inp = (struct mp3_task_struct *) kmalloc(sizeof(struct mp3_task_struct),GFP_KERNEL); // need to free this memory
