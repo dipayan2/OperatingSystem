@@ -398,7 +398,7 @@ void __exit mp3_exit(void)
    if(!list_empty(&test_head)){
          list_for_each_safe(pos, q, &test_head){
 
-            tmp= list_entry(pos, struct my_pid_data, list);
+            tmp= list_entry(pos, struct mp3_task_struct, list);
             // printk(KERN_INFO "Freeing List\n");
             list_del(pos);
             kfree(tmp);
