@@ -295,7 +295,7 @@ static ssize_t mp3_read (struct file *file, char __user *buffer, size_t count, l
    int len=0;                 // How much data is read
    char *buf;                 // Kernel buffer to read data
    struct list_head *ptr;     // Kernel Linked List 
-   struct mp2_task_struct *entry; // Kernel Linked List
+   struct mp3_task_struct *entry; // Kernel Linked List
    // Checking if the offset is correct
    if (*data > 0){
       printk(KERN_INFO "\nRead offset issue\n");
