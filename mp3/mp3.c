@@ -243,9 +243,9 @@ void handleRegistration(char *kbuf){
    pid_inp = (int)readVal[0];
    printk(KERN_ALERT "Register %d\n",pid_inp);
   
-   if (pid_inp == -1{
+   if (pid_inp == -1){
       return;
-   }}
+   }
   
    task_inp = (struct mp3_task_struct *) kmalloc(sizeof(struct mp3_task_struct),GFP_KERNEL); // need to free this memory
    if (!task_inp){
