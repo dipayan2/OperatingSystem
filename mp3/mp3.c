@@ -338,7 +338,7 @@ void handleDeReg(char *kbuf){
       printk(KERN_ALERT "[DerReg] No Deregistered Pid : %d\n", t_pid);
    }
 
-   //spin_lock(&my_spin);
+   spin_lock(&my_spin);
    if(list_empty(&test_head)){
       
       mydelete_workqueue();
@@ -346,7 +346,7 @@ void handleDeReg(char *kbuf){
       buffer_index = 0;
       init_jiffy = jiffies;
    }
-  // spin_unlock(&my_spin);
+  spin_unlock(&my_spin);
 
 
    //delete_workqueue();
