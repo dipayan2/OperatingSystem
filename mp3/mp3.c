@@ -210,7 +210,7 @@ void handleRegistration(char *kbuf){
             //printk(KERN_ALERT "The token : %s\n",token);
             value = simple_strtol(token, &endptr, 10);
             if (value == 0 && endptr == token){
-                printk(KERN_ALERT "Error in long conversion");
+                printk(KERN_ALERT "[Reg]Error in long conversion");
             } 
             else{
                // printk(KERN_ALERT "The value is %ld\n", value);
@@ -272,6 +272,7 @@ void handleDeReg(char *kbuf){
    char action;
    char *endptr;
    long value;
+   int flag = 0;
 
    // Data for dereg the task
    struct list_head *posv, *qv;
@@ -281,17 +282,17 @@ void handleDeReg(char *kbuf){
    while( (token = strsep(&kbuf," ")) != NULL ){
       if (idx == 0){
          action = *token;
-         // printk(KERN_ALERT "This value is %c \n",action);
+          printk(KERN_ALERT "[De Reg]: This value is %c \n",action);
       }
       else if (idx <= 1){
          removeLeadSpace(&token);
          //printk(KERN_ALERT "The token : %s\n",token);
          value = simple_strtol(token, &endptr, 10);
          if (value == 0 && endptr == token){
-            // printk(KERN_ALERT "Error in long conversion");
+            printk(KERN_ALERT "[DeReg]Error in long conversion\n");
          } 
          else{
-            // printk(KERN_ALERT "The value is %ld\n", value);
+            printk(KERN_ALERT "[DeReg]The pid value is %ld\n", value);
             t_pid = (int)value;
             break;
          }
@@ -300,6 +301,7 @@ void handleDeReg(char *kbuf){
       idx += 1;
    } // read all the data
 
+   printk(KERN_ALERT "[DeReg] Pid deregistered is : %d\n", t_pid);
    // Do work DeReg
    // need to stop the timer, but let's not do that yet!!
    // Just remove from the list
@@ -311,21 +313,29 @@ void handleDeReg(char *kbuf){
 
          temp= list_entry(posv, struct mp3_task_struct, list);
          if (temp->pid == t_pid){
+            flag = 1;
             list_del(posv);
             
             // need to delete the timer too
-            printk(KERN_ALERT "\nDeleted Pid : %d and cpu_time\n", temp->pid);
+            printk(KERN_ALERT "\n[DeReg]Deleted Pid : %d\n", temp->pid);
             kfree(temp);
             
          }
       }
     }
    spin_unlock(&my_spin);
-   spin_lock(&my_spin);
+
+   if (flag == 0){
+      printk(KERN_ALERT "[DerReg] No Deregistered Pid : %d\n", t_pid);
+   }
+
+   //spin_lock(&my_spin);
    if(list_empty(&test_head)){
       mydelete_workqueue();
+      buffer_index = 0;
+      init_jiffy = jiffies;
    }
-   spin_unlock(&my_spin);
+  // spin_unlock(&my_spin);
 
 
    //delete_workqueue();
