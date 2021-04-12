@@ -22,6 +22,7 @@
 #include <linux/kdev_t.h> 
 #include <linux/cdev.h>
 #include <linux/mm.h>
+#include <linux/mutex.h>
 
 #include "mp3_given.h"
 
@@ -39,7 +40,7 @@ MODULE_DESCRIPTION("CS-423 MP3");
 
 /* LOCKING VARIABLE*/
 static DEFINE_SPINLOCK(my_spin);
-
+static DEFINE_MUTEX(my_mutex);
 
 void removeLeadSpace(char** ptr){
    while(**ptr != '\0'){
@@ -118,7 +119,8 @@ static void memFunction(struct work_struct *work){
 
     // should put a lock here, because the registration can cause inconsistent state.
     //printk(KERN_INFO "This is memfunction going into lock\n");
-    spin_lock(&my_spin);
+    //spin_lock(&my_spin);
+    mutex_lock(&my_mutex);
     if(!list_empty(&test_head)){
     list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp3_task_struct, list);
@@ -146,8 +148,8 @@ static void memFunction(struct work_struct *work){
       }
     }
     }
-
-    spin_unlock(&my_spin);
+    //spin_unlock(&my_spin);
+    mutex_unlock(&my_mutex);
 
    return;
 }
@@ -267,9 +269,11 @@ void handleRegistration(char *kbuf){
       mycreate_workqueue();
    }
    //create_workqueue();
-   spin_lock(&my_spin);
+   //spin_lock(&my_spin);
+   mutex_lock(&my_mutex);
    list_add(&(task_inp->list),&test_head);
-   spin_unlock(&my_spin);
+   //spin_unlock(&my_spin);
+   mutex_unlock(&my_mutex);
 
    // // Check if the list if addedd
    // if(list_empty(&test_head)){
@@ -321,7 +325,8 @@ void handleDeReg(char *kbuf){
    // need to stop the timer, but let's not do that yet!!
    // Just remove from the list
    // Need to remove the workqueue
-  spin_lock(&my_spin);
+   //spin_lock(&my_spin);
+   mutex_lock(&my_mutex);
     if(!list_empty(&test_head)){
       list_for_each_safe(posv, qv, &test_head){
 
@@ -341,14 +346,16 @@ void handleDeReg(char *kbuf){
          }
       }
     }
-    spin_unlock(&my_spin);
+    //spin_unlock(&my_spin);
+    mutex_unlock(&my_mutex);
    
 
    if (flag == 0){
       printk(KERN_ALERT "[DerReg] No Deregistered Pid : %d\n", t_pid);
    }
 
-   spin_lock(&my_spin);
+   //spin_lock(&my_spin);
+   mutex_lock(&my_mutex);
    if(list_empty(&test_head)){
       
       mydelete_workqueue();
@@ -356,7 +363,8 @@ void handleDeReg(char *kbuf){
       buffer_index = 0;
       init_jiffy = jiffies;
    }
-  spin_unlock(&my_spin);
+ // spin_unlock(&my_spin);
+ mutex_unlock(&my_mutex);
 
 
    //delete_workqueue();
@@ -430,7 +438,8 @@ static ssize_t mp3_read (struct file *file, char __user *buffer, size_t count, l
       
    copied = 0;
    // Checking id list is empty otherwise, acquiring the lock and iterationg over and writing list values into the buffer.
-   spin_lock(&my_spin);
+   //spin_lock(&my_spin);
+   mutex_lock(&my_mutex);
    if (!list_empty(&test_head)){
 
       list_for_each(ptr,&test_head){
@@ -444,7 +453,8 @@ static ssize_t mp3_read (struct file *file, char __user *buffer, size_t count, l
    else{
       printk(KERN_ALERT "[Read] Empty list\n");
    }
-   spin_unlock(&my_spin);
+   //spin_unlock(&my_spin);
+   mutex_unlock(&my_mutex);
 
 
    // Sending data to user buffer from kernel buffer
@@ -600,7 +610,8 @@ void __exit mp3_exit(void)
    struct list_head *pos, *q;
    struct mp3_task_struct *tmp;
 
-   spin_lock(&my_spin);
+  // spin_lock(&my_spin);
+  mutex_lock(&my_mutex);
    if(!list_empty(&test_head)){
          list_for_each_safe(pos, q, &test_head){
 
@@ -610,7 +621,8 @@ void __exit mp3_exit(void)
             kfree(tmp);
          }
     }
-   spin_unlock(&my_spin);
+   //spin_unlock(&my_spin);
+   mutex_unlock(&my_mutex);
    printk(KERN_INFO "List Freed\n");
 
     // Removing the timer 
