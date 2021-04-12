@@ -509,11 +509,12 @@ int __init mp3_init(void)
          return -1;
    }
    major_number = MAJOR(dev_num);
-   printk(KERN_INFO "Character device of major : %ud initialized\n",major_number);
+   printk(KERN_INFO "Character device of major : %u initialized\n",major_number);
    // Allocate cdev structure
    mp3_dev = cdev_alloc();
    mp3_dev->ops = &mp3_cops;
-   if(cdev_add(mp3_dev,dev_num,1) < 0){
+   ret = cdev_add(mp3_dev,dev_num,1);
+   if( ret< 0){
          printk(KERN_INFO "Device : device adding to the kerknel failed\n");
          return ret;
    }
@@ -572,12 +573,13 @@ void __exit mp3_exit(void)
    printk(KERN_INFO "List Freed\n");
 
     // Removing the timer 
-   printk(KERN_ALERT "removing timer\n");
+   
    /*Unreserving thr memory*/
    // for(i=0;i<NPAGES*PAGE_SIZE;i+= PAGE_SIZE){
    //     SetPageReserved(vmalloc_to_page((void *)(((unsigned long)vmalloc_area) + i)));
    // }
    // Freeing virtual memory
+   printk(KERN_ALERT "Freeing memory\n");
    vfree(vmalloc_area);
    // Character device deletion
    cdev_del(mp3_dev);
