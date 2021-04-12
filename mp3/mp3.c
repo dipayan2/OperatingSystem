@@ -206,7 +206,7 @@ void handleRegistration(char *kbuf){
    char action;
    char *endptr;
    long value;
-   int pid_inp;
+   int pid_inp = -1;
    unsigned long min_flt;
    unsigned long maj_flt;
    unsigned long utime;
@@ -228,6 +228,7 @@ void handleRegistration(char *kbuf){
             value = simple_strtol(token, &endptr, 10);
             if (value == 0 && endptr == token){
                 printk(KERN_ALERT "[Reg]Error in long conversion");
+                readVal[idx-1] = -1;
             } 
             else{
                // printk(KERN_ALERT "The value is %ld\n", value);
@@ -242,6 +243,9 @@ void handleRegistration(char *kbuf){
    pid_inp = (int)readVal[0];
    printk(KERN_ALERT "Register %d\n",pid_inp);
   
+   if (pid_inp == -1{
+      return;
+   }}
   
    task_inp = (struct mp3_task_struct *) kmalloc(sizeof(struct mp3_task_struct),GFP_KERNEL); // need to free this memory
    if (!task_inp){
