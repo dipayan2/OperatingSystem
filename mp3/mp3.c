@@ -125,7 +125,7 @@ static void memFunction(struct work_struct *work){
         printk( KERN_ALERT "Process %ld does not exist anymore, will be removed\n", (long int)tmp->pid);
         list_del(pos);
         kfree(tmp);
-        buffer_index--;
+        //buffer_index--;
       }
       else{
 
@@ -374,6 +374,10 @@ static ssize_t mp3_write (struct file *file, const char __user *buffer, size_t c
     }
     // Define a buffer for the string
     kbuf = (char*) kmalloc(count,GFP_KERNEL); 
+   if (!kbuf){
+      printk(KERN_INFO "Unable to allocate buffer!!\n");
+       return -ENOMEM;
+   }
     ret = strncpy_from_user(kbuf, buffer, count);
     if (ret == -EFAULT){
         printk(KERN_INFO "\nerror in reading the PID\n");
