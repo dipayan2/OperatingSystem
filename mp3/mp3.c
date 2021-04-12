@@ -119,10 +119,10 @@ static void memFunction(struct work_struct *work){
     spin_lock(&my_spin);
     list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp3_task_struct, list);
-      printk(KERN_ALERT "[MemFunc] The pid of the task : %d\n", tmp->pid );
+      //printk(KERN_ALERT "[MemFunc] The pid of the task : %d\n", tmp->pid );
       ret = get_cpu_use(tmp->pid, &minor_fault_count, &major_fault_count, &utime, &stime);
       if ( ret ){
-        printk( "Process %ld does not exist anymore, will be removed\n", (long int)tmp->pid);
+        //printk( "Process %ld does not exist anymore, will be removed\n", (long int)tmp->pid);
        // list_del(pos);
         //kfree(tmp);
         //buffer_index--;
