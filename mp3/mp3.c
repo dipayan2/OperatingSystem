@@ -272,7 +272,6 @@ void handleDeReg(char *kbuf){
    char action;
    char *endptr;
    long value;
-   int flag = 0;
 
    // Data for dereg the task
    struct list_head *posv, *qv;
