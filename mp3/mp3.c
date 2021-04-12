@@ -252,11 +252,12 @@ void handleRegistration(char *kbuf){
    // Add to list should be within lock
    // Should check if the list is 
    if (init_wq == 0){
+      printk(KERN_ALERT "[Reg]Creating the workqueue\n");
       mycreate_workqueue();
    }
    //create_workqueue();
    spin_lock(&my_spin);
-   list_add(&(task_inp->list),&test_head);
+   list_add(&task_inp->list,&test_head);
    spin_unlock(&my_spin);
 
    return;
