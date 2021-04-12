@@ -169,8 +169,10 @@ int mycreate_workqueue(void){
 }
 
 int mydelete_workqueue(void){
+   if (my_wq != NULL){
    flush_workqueue( my_wq );
    destroy_workqueue( my_wq );
+   }
    init_wq = 0;
    my_wq = NULL;
    return 0;
@@ -338,8 +340,9 @@ void handleDeReg(char *kbuf){
 
    //spin_lock(&my_spin);
    if(list_empty(&test_head)){
-      printk(KERN_ALERT "Deleted the workqueue\n");
+      
       mydelete_workqueue();
+      printk(KERN_ALERT "Deleted the workqueue\n");
       buffer_index = 0;
       init_jiffy = jiffies;
    }
