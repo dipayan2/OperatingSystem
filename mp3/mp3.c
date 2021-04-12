@@ -17,6 +17,7 @@
 #include <linux/sched.h>
 #include <linux/spinlock.h>
 #include <linux/vmalloc.h>
+#include <linux/kdev_t.h> 
 
 #include "mp3_given.h"
 
@@ -24,7 +25,10 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("dipayan2");
 MODULE_DESCRIPTION("CS-423 MP3");
 #define DEBUG 1
+#define NPAGES 128
+#define PAGE_SIZE 4096
 #define BUFFER_BLOCK (128*4*1024)
+#define DEVIVCENAME "mp3buf"
 
 
 
@@ -36,7 +40,7 @@ static struct workqueue_struct *my_wq;
 struct work_struct my_work;
 struct list_head test_head;
 static struct timer_list my_timer;
-void* my_buffer; // for vmalloc usage
+void* vmalloc_area; // for vmalloc usage
 int init_wq = 0;
 struct mp3_task_struct {
   struct task_struct *linux_task;
@@ -70,6 +74,7 @@ void my_timer_callback(unsigned long data) {
    return;
 }
 
+/*This is where all the data is updated*/
 
 static void memFunction(void){
    return;
@@ -346,17 +351,91 @@ static const struct file_operations mp3_fops = {
      .write	= mp3_write,
  };
 
+/**
+ * 
+ * Character Device Handling
+ * 
+ * **/
+
+static int device_open(struct inode *inode, struct file *flip) {
+    return 0;
+}
+
+static int device_close(struct inode *inode, struct file *flip) {
+    return 0;
+}
+static int device_mmap(struct file *filp, struct vm_area_struct *vma){
+
+  int ret;
+  unsigned long pfn, size;
+  unsigned long start = vma->vm_start;
+  unsigned long length = vma->vm_end - start;
+  void *ptr = (void*) vmalloc_area;
+
+  if (vma->vm_pgoff > 0 || length > BUFFER_SIZE)
+    return -EIO;
+  while (length > 0) {
+    pfn = vmalloc_to_pfn(ptr);
+    size = length < PAGE_SIZE ? length : PAGE_SIZE;
+    ret = remap_pfn_range(vma, start, pfn, size, PAGE_SHARED);
+    if (ret < 0)
+      return ret;
+    start += PAGE_SIZE;
+    ptr += PAGE_SIZE;
+    length -= PAGE_SIZE;
+  }
+  return 0;
+
+}
+
+struct cdev *mp3_dev; /*this is the name of my char driver that i will be registering*/
+int major_number; /* will store the major number extracted by dev_t*/
+dev_t dev_num; /*will hold the major number that the kernel gives*/
+
+
+struct file_operations mp3_cops = { /* these are the file operations provided by our driver */
+    .owner = THIS_MODULE, /*prevents unloading when operations are in use*/
+    .open = device_open,  /*to open the device*/
+    .mmap = device_mmap,
+    .release = device_close /*to close the device*/
+    
+};
+
+
+
 int __init mp3_init(void)
 {
+   int i;
    #ifdef DEBUG
    printk(KERN_ALERT "MP3 MODULE LOADING\n");
    #endif
    printk(KERN_ALERT "Hello World, this is MP3\n");
    // Initialize a block of memory using vmalloc
-   my_buffer = vmalloc(BUFFER_BLOCK);
-   if(!my_buffer){
+   vmalloc_area = vmalloc(NPAGES*PAGE_SIZE);
+   if(!vmalloc_area){
       printk(KERN_ALERT "Unable to allocate buffer memory");
+      return -1;
    }
+   /*Mark pages reserved*/
+   for(i=0;i<NPAGES*PAGE_SIZE;i+= PAGE_SIZE){
+       SetPageReserved(vmalloc_to_page((void *)(((unsigned long)vmalloc_area) + i)));
+   }
+   /* INIT CHARACTER DEVICE*/
+   if (alloc_chrdev_region(&dev_num,0,1,DEVICENAME) <0){
+         printk(KERN_INFO "Cannot allocate major number for device 1\n");
+         return -1;
+   }
+   major_number = MAJOR(dev_num);
+   printk(KERN_INFO "Character device of major : %ud initialized\n",major_number);
+   // Allocate cdev structure
+   mp3_dev = cdev_alloc();
+   mp3_dev->ops = &mp3_cops;
+   if(cdev_add(mp3_dev,dev_num,1) < 0){
+         printk(KERN_INFO "Device : device adding to the kerknel failed\n");
+         return ret;
+   }
+
+
    // Initilizing the linked list
    INIT_LIST_HEAD(&test_head);
    // Created the directory
@@ -383,7 +462,7 @@ void __exit mp3_exit(void)
    #endif
    printk(KERN_ALERT "Goodbye\n");
    // Removing the timer
-    del_timer(&my_timer);
+   del_timer(&my_timer);
    //Removing the workqueue
    if (my_wq!= NULL){
       flush_workqueue( my_wq );
@@ -409,8 +488,15 @@ void __exit mp3_exit(void)
 
     // Removing the timer 
    printk(KERN_ALERT "removing timer\n");
-   // Deleting memory
-   vfree(my_buffer);
+   /*Unreserving thr memory*/
+   for(i=0;i<NPAGES*PAGE_SIZE;i+= PAGE_SIZE){
+       SetPageReserved(vmalloc_to_page((void *)(((unsigned long)vmalloc_area) + i)));
+   }
+   // Freeing virtual memory
+   vfree(vmalloc_area);
+   // Character device deletion
+   cdev_del(mp3_dev);
+   unregister_chrdev_region(dev_num,1);
    // Removing the directory and files
    remove_proc_entry("status", mp3_dir);
    remove_proc_entry("mp3", NULL);
