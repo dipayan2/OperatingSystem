@@ -364,6 +364,8 @@ static int device_open(struct inode *inode, struct file *flip) {
 static int device_close(struct inode *inode, struct file *flip) {
     return 0;
 }
+
+/* Provides mmap function to char devices*/
 static int device_mmap(struct file *filp, struct vm_area_struct *vma){
 
   int ret;
