@@ -68,6 +68,7 @@ struct work_struct my_work;
 struct list_head test_head;
 static struct timer_list my_timer;
 struct fault_stats* vmalloc_area; // for vmalloc usage
+unsigned long buffer_index = 0;
 unsigned long init_jiffy;
 int init_wq = 0;
 struct mp3_task_struct {
@@ -93,15 +94,15 @@ static void memFunction(struct work_struct *work){
 
     struct fault_stats* data_ptr;
     //Update index
-    data_ptr= buffer + (buffer_index++);
+    data_ptr= vmalloc_area + (buffer_index++);
 
-    if (buffer_index == (BUFFER_SIZE/sizeof(struct fault_stats)) - 2 )
+    if (buffer_index == (BUFFER_BLOCK/sizeof(struct fault_stats)) - 2 )
     {
-      printk( "WARNING! BUFFER FULL \n");
+      printk(KERN_INFO "WARNING! BUFFER FULL \n");
     }
-    if (buffer_index  > (BUFFER_SIZE/sizeof(struct fault_stats)) - 2 )
+    if (buffer_index  > (BUFFER_BLOCK/sizeof(struct fault_stats)) - 2 )
     {
-      printk( "ERROR - BUFFER FULL!!! \n");
+      printk(KERN_INFO "ERROR - BUFFER FULL!!! \n");
       return;
     }
 
