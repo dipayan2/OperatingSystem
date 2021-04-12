@@ -123,9 +123,9 @@ static void memFunction(struct work_struct *work){
       ret = get_cpu_use(tmp->pid, &minor_fault_count, &major_fault_count, &utime, &stime);
       if ( ret ){
         printk( "Process %ld does not exist anymore, will be removed\n", (long int)tmp->pid);
-        list_del(pos);
-        kfree(tmp);
-        buffer_index--;
+       // list_del(pos);
+        //kfree(tmp);
+        //buffer_index--;
       }
       else{
 
