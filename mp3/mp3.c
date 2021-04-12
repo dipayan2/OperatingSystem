@@ -311,7 +311,8 @@ void handleDeReg(char *kbuf){
       list_for_each_safe(posv, qv, &test_head){
 
          temp= list_entry(posv, struct mp3_task_struct, list);
-         if (temp->pid == t_pid){
+         printk(KERN_ALERT "[DeReg] Looping the list pid : %d\n",(int)temp->pid);
+         if ((int)temp->pid == t_pid){
             flag = 1;
             list_del(posv);
             
