@@ -1,5 +1,7 @@
 #define LINUX
-
+/**
+ * HEADERS  FOR  THE MP3
+ * **/
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
@@ -26,11 +28,12 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("dipayan2");
 MODULE_DESCRIPTION("CS-423 MP3");
+
 #define DEBUG 1
 #define NPAGES 128
 #define PAGE_SIZE 4096
 #define BUFFER_BLOCK (128*4*1024)
-#define DEVICENAME "mp3buf"
+#define DEVICENAME "mp3buf" // Name of the device
 
 
 
@@ -320,7 +323,6 @@ void handleDeReg(char *kbuf){
    // Just remove from the list
    // Need to remove the workqueue
 
-   spin_lock(&my_spin);
     if(!list_empty(&test_head)){
       list_for_each_safe(posv, qv, &test_head){
 
@@ -328,16 +330,19 @@ void handleDeReg(char *kbuf){
          printk(KERN_ALERT "[DeReg] Looping the list pid : %d\n",(int)temp->pid);
          if ((int)temp->pid == t_pid){
             flag = 1;
+
+            spin_lock(&my_spin);
             list_del(posv);
             
             // need to delete the timer too
             printk(KERN_ALERT "\n[DeReg]Deleted Pid : %d\n", temp->pid);
             kfree(temp);
+            spin_unlock(&my_spin);
             
          }
       }
     }
-   spin_unlock(&my_spin);
+   
 
    if (flag == 0){
       printk(KERN_ALERT "[DerReg] No Deregistered Pid : %d\n", t_pid);
