@@ -117,7 +117,7 @@ static void memFunction(struct work_struct *work){
    
 
     // should put a lock here, because the registration can cause inconsistent state.
-    printk(KERN_ALERT "This is memfunction going into lock\n");
+    printk(KERN_INFO "This is memfunction going into lock\n");
     spin_lock(&my_spin);
     list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp3_task_struct, list);
@@ -127,7 +127,7 @@ static void memFunction(struct work_struct *work){
         printk( KERN_ALERT "Process %ld does not exist anymore, will be removed\n", (long int)tmp->pid);
         list_del(pos);
         kfree(tmp);
-        //buffer_index--;
+        buffer_index--;
       }
       else{
 
@@ -487,7 +487,7 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma){
   unsigned long pfn, size;
   unsigned long start = vma->vm_start;
   unsigned long length = vma->vm_end - start;
-  char *ptr = (char*) vmalloc_area;
+  void *ptr = (void*) vmalloc_area;
 
   if (vma->vm_pgoff > 0 || length > BUFFER_BLOCK)
     return -EIO;
