@@ -81,8 +81,6 @@ struct mp3_task_struct {
   pid_t pid;
   unsigned long min_flt;
   unsigned long maj_flt;
-  unsigned long utime;
-  unsigned long stime;
 };
 
 
@@ -119,6 +117,7 @@ static void memFunction(struct work_struct *work){
    
 
     // should put a lock here, because the registration can cause inconsistent state.
+    printk(KERN_ALERT "This is memfunction going into lock\n");
     spin_lock(&my_spin);
     list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp3_task_struct, list);
@@ -244,18 +243,16 @@ void handleRegistration(char *kbuf){
    }
    // Allocate things to the  list value
   
-   if (get_cpu_use(pid_inp, &min_flt, &maj_flt, &utime, &stime) == -1){
-      printk(KERN_ALERT "Unable to get page details for the task");
-      kfree(task_inp);
-      return;
-   }
+   // if (get_cpu_use(pid_inp, &min_flt, &maj_flt, &utime, &stime) == -1){
+   //    printk(KERN_ALERT "Unable to get page details for the task");
+   //    kfree(task_inp);
+   //    return;
+   // }
 
    // Adding data to the node
    task_inp->linux_task = find_task_by_pid(pid_inp);
-   task_inp->maj_flt = maj_flt;
-   task_inp->min_flt = min_flt;
-   task_inp->utime = utime;
-   task_inp->stime = stime;
+   task_inp->maj_flt = 0;
+   task_inp->min_flt = 0;
    task_inp->process_utilization = 0;
    task_inp->pid = pid_inp;
 
