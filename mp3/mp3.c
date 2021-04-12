@@ -122,10 +122,10 @@ static void memFunction(struct work_struct *work){
       //printk(KERN_ALERT "[MemFunc] The pid of the task : %d\n", tmp->pid );
       ret = get_cpu_use(tmp->pid, &minor_fault_count, &major_fault_count, &utime, &stime);
       if ( ret ){
-        //printk( "Process %ld does not exist anymore, will be removed\n", (long int)tmp->pid);
-       // list_del(pos);
-        //kfree(tmp);
-        //buffer_index--;
+        printk( KERN_ALERT "Process %ld does not exist anymore, will be removed\n", (long int)tmp->pid);
+        list_del(pos);
+        kfree(tmp);
+        sbuffer_index--;
       }
       else{
 
@@ -262,10 +262,10 @@ void handleRegistration(char *kbuf){
    list_add(&(task_inp->list),&test_head);
    spin_unlock(&my_spin);
 
-   // Check if the list if addedd
-   if(list_empty(&test_head)){
-      printk(KERN_ALERT "[Reg]Unable to add the element after Registration\n");
-   }
+   // // Check if the list if addedd
+   // if(list_empty(&test_head)){
+   //    printk(KERN_ALERT "[Reg]Unable to add the element after Registration\n");
+   // }
    return;
    
 }
