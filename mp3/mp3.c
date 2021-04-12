@@ -117,7 +117,7 @@ static void memFunction(struct work_struct *work){
    
 
     // should put a lock here, because the registration can cause inconsistent state.
-    printk(KERN_INFO "This is memfunction going into lock\n");
+    //printk(KERN_INFO "This is memfunction going into lock\n");
     spin_lock(&my_spin);
     list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp3_task_struct, list);
