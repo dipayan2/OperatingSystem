@@ -129,8 +129,11 @@ static void memFunction(struct work_struct *work){
       if ( ret ){
         printk( KERN_ALERT "Process %ld does not exist anymore, will be removed\n", (long int)tmp->pid);
         list_del(pos);
-        kfree(tmp);
-        //buffer_index--;
+        if(tmp != NULL){
+           kfree(tmp);
+        }
+        
+        buffer_index--;
       }
       else{
 
@@ -340,7 +343,10 @@ void handleDeReg(char *kbuf){
             
             // need to delete the timer too
             printk(KERN_ALERT "\n[DeReg]Deleted Pid : %d\n", temp->pid);
-            kfree(temp);
+            if (temp != NULL){
+                  kfree(temp);
+            }
+            
             
             
          }
@@ -391,7 +397,7 @@ static ssize_t mp3_write (struct file *file, const char __user *buffer, size_t c
         return -EFAULT;
     }
     // Define a buffer for the string
-    kbuf = (char*) kmalloc(count,GFP_KERNEL); 
+   kbuf = (char*) kmalloc(count,GFP_KERNEL); 
    if (!kbuf){
       printk(KERN_INFO "Unable to allocate buffer!!\n");
        return -ENOMEM;
@@ -409,8 +415,10 @@ static ssize_t mp3_write (struct file *file, const char __user *buffer, size_t c
        handleDeReg(kbuf);
     }
 
-    
-    kfree(kbuf);
+    if (kbuf != NULL){
+         kfree(kbuf);
+    }
+  
     return ret;
 }
 
@@ -462,7 +470,10 @@ static ssize_t mp3_read (struct file *file, char __user *buffer, size_t count, l
    if (copied < 0){
       return -EFAULT;
    }
-   kfree(buf);
+   if (buf != NULL){
+         kfree(buf);
+   }
+
    return copied ;
 }
 
@@ -618,7 +629,10 @@ void __exit mp3_exit(void)
             tmp= list_entry(pos, struct mp3_task_struct, list);
             // printk(KERN_INFO "Freeing List\n");
             list_del(pos);
-            kfree(tmp);
+            if (tmp != NULL){
+               kfree(tmp);
+            }
+            
          }
     }
    //spin_unlock(&my_spin);
