@@ -391,7 +391,7 @@ static ssize_t mp3_write (struct file *file, const char __user *buffer, size_t c
         printk(KERN_INFO "\nerror in reading the PID\n");
         return -EFAULT;
     }
-    printk(KERN_ALERT "%s\n",kbuf);
+    //printk(KERN_ALERT "%s\n",kbuf);
     if (kbuf[0]=='R'){
        handleRegistration(kbuf);
     } 
