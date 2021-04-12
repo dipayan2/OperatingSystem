@@ -130,7 +130,7 @@ static void memFunction(struct work_struct *work){
         printk( KERN_ALERT "Process %ld does not exist anymore, will be removed\n", (long int)tmp->pid);
         list_del(pos);
         kfree(tmp);
-        buffer_index--;
+        //buffer_index--;
       }
       else{
 
