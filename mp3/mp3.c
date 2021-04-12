@@ -575,9 +575,9 @@ void __exit mp3_exit(void)
     // Removing the timer 
    
    /*Unreserving thr memory*/
-   // for(i=0;i<NPAGES*PAGE_SIZE;i+= PAGE_SIZE){
-   //     SetPageReserved(vmalloc_to_page((void *)(((unsigned long)vmalloc_area) + i)));
-   // }
+   for(i=0;i<NPAGES*PAGE_SIZE;i+= PAGE_SIZE){
+       ClearPageReserved(vmalloc_to_page((void *)(((unsigned long)vmalloc_area) + i)));
+   }
    // Freeing virtual memory
    printk(KERN_ALERT "Freeing memory\n");
    vfree(vmalloc_area);
