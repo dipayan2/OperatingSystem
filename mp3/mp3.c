@@ -18,6 +18,8 @@
 #include <linux/spinlock.h>
 #include <linux/vmalloc.h>
 #include <linux/kdev_t.h> 
+#include <linux/cdev.h>
+#include <linux/mm.h>
 
 #include "mp3_given.h"
 
