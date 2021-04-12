@@ -319,7 +319,7 @@ void handleDeReg(char *kbuf){
    // need to stop the timer, but let's not do that yet!!
    // Just remove from the list
    // Need to remove the workqueue
-
+  spin_lock(&my_spin);
     if(!list_empty(&test_head)){
       list_for_each_safe(posv, qv, &test_head){
 
@@ -328,17 +328,18 @@ void handleDeReg(char *kbuf){
          if ((int)temp->pid == t_pid){
             flag = 1;
 
-            spin_lock(&my_spin);
+          
             list_del(posv);
             
             // need to delete the timer too
             printk(KERN_ALERT "\n[DeReg]Deleted Pid : %d\n", temp->pid);
             kfree(temp);
-            spin_unlock(&my_spin);
+            
             
          }
       }
     }
+    spin_unlock(&my_spin);
    
 
    if (flag == 0){
