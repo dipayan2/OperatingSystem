@@ -153,12 +153,14 @@ static void memFunction(struct work_struct *work){
 void my_timer_callback(unsigned long data) {
   //printk(KERN_ALERT "This line is printed after 5 seconds.\n");
   // Add job to the queue
-  spin_lock(&my_spin);
+ // spin_lock(&my_spin);
   if (!list_empty(&test_head)){
-     queue_work(my_wq, &my_work); 
+     if (my_wq != NULL){
+       queue_work(my_wq, &my_work); 
+     }
      mod_timer(&my_timer, jiffies + msecs_to_jiffies(50)); // This function ensures that timer is called again in 5 second
   }
-   spin_unlock(&my_spin);
+  // spin_unlock(&my_spin);
    return;
 }
 int mycreate_workqueue(void){
