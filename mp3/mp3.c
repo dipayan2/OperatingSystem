@@ -119,6 +119,7 @@ static void memFunction(struct work_struct *work){
     // should put a lock here, because the registration can cause inconsistent state.
     //printk(KERN_INFO "This is memfunction going into lock\n");
     spin_lock(&my_spin);
+    if(!list_empty(&test_head)){
     list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp3_task_struct, list);
       //printk(KERN_ALERT "[MemFunc] The pid of the task : %d\n", tmp->pid );
@@ -143,6 +144,7 @@ static void memFunction(struct work_struct *work){
         data_ptr->total_major_fault_count += tmp->maj_flt;
         data_ptr->cpu_utilization         += tmp->process_utilization;
       }
+    }
     }
 
     spin_unlock(&my_spin);
