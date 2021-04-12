@@ -35,23 +35,6 @@ MODULE_DESCRIPTION("CS-423 MP3");
 /* LOCKING VARIABLE*/
 static DEFINE_SPINLOCK(my_spin);
 
-//Linked list header
-static struct workqueue_struct *my_wq;
-struct work_struct my_work;
-struct list_head test_head;
-static struct timer_list my_timer;
-void* vmalloc_area; // for vmalloc usage
-int init_wq = 0;
-struct mp3_task_struct {
-  struct task_struct *linux_task;
-  struct list_head list;
-  unsigned long long process_utilization; 
-  pid_t pid;
-  unsigned long min_flt;
-  unsigned long maj_flt;
-  unsigned long utime;
-  unsigned long stime;
-};
 
 void removeLeadSpace(char** ptr){
    while(**ptr != '\0'){
@@ -64,6 +47,105 @@ void removeLeadSpace(char** ptr){
    }
    return;
 }
+
+
+/*This is where all the data is updated*/
+
+struct fault_stats{
+
+    unsigned long time_jiffies;
+    unsigned long total_minor_fault_count;
+    unsigned long total_major_fault_count;
+    unsigned long cpu_utilization;
+};
+
+
+//Linked list header
+static struct workqueue_struct *my_wq;
+struct work_struct my_work;
+struct list_head test_head;
+static struct timer_list my_timer;
+struct fault_stats* vmalloc_area; // for vmalloc usage
+unsigned long init_jiffy;
+int init_wq = 0;
+struct mp3_task_struct {
+  struct task_struct *linux_task;
+  struct list_head list;
+  unsigned long long process_utilization; 
+  pid_t pid;
+  unsigned long min_flt;
+  unsigned long maj_flt;
+  unsigned long utime;
+  unsigned long stime;
+};
+
+
+static void memFunction(struct work_struct *work){
+    int ret;
+    struct list_head *pos, *q;
+    struct mp3_task_struct *tmp;
+    long minor_fault_count;
+    long major_fault_count;
+    long utime;
+    long stime;
+
+    struct fault_stats* data_ptr;
+    //Update index
+    data_ptr= buffer + (buffer_index++);
+
+    if (buffer_index == (BUFFER_SIZE/sizeof(struct fault_stats)) - 2 )
+    {
+      printk( "WARNING! BUFFER FULL \n");
+    }
+    if (buffer_index  > (BUFFER_SIZE/sizeof(struct fault_stats)) - 2 )
+    {
+      printk( "ERROR - BUFFER FULL!!! \n");
+      return;
+    }
+
+    data_ptr->jiffies_mark = jiffies;
+    data_ptr->total_minor_fault_count = 0;
+    data_ptr->total_major_fault_count = 0;
+    data_ptr->cpu_utilization = 0;
+    
+    (data_ptr + 1)->jiffies_mark = -1; // for the last element
+  
+   
+
+    // should put a lock here, because the registration can cause inconsistent state.
+    spin_lock(&my_spin);
+    list_for_each_safe(pos, q, & mp3_linked_list){
+      tmp= list_entry(pos, struct mp3_task_struct, list);
+      ret = get_cpu_use(tmp->pid, &minor_fault_count, &major_fault_count, &utime, &stime);
+      if ( ret ){
+        printk( "Process %ld does not exist anymore, will be removed\n", tmp->pid);
+        list_del(pos);
+        kfree(tmp);
+        buffer_index--;
+      }
+      else{
+
+        //Save state in each process
+        tmp->min_flt   += minor_fault_count;
+        tmp->maj_flt   += major_fault_count;
+        utime = cputime_to_jiffies(utime);
+        stime = cputime_to_jiffies(stime);
+        tmp->process_utilization = ((utime + stime) * 10000) / (jiffies - init_jiffy);
+
+        //Update stats on the buffer
+        data_ptr->total_minor_fault_count += tmp->minor_fault_count;
+        data_ptr->total_major_fault_count += tmp->major_fault_count;
+        data_ptr->cpu_utilization         += tmp->process_utilization;
+      }
+    }
+
+    spin_unlock(&my_spin);
+
+   return;
+}
+
+
+
 void my_timer_callback(unsigned long data) {
   //printk(KERN_ALERT "This line is printed after 5 seconds.\n");
   // Add job to the queue
@@ -73,13 +155,6 @@ void my_timer_callback(unsigned long data) {
   }
    return;
 }
-
-/*This is where all the data is updated*/
-
-static void memFunction(void){
-   return;
-}
-
 int mycreate_workqueue(void){
    init_wq = 1;
    my_wq = create_workqueue("mp3q");
@@ -167,6 +242,7 @@ void handleRegistration(char *kbuf){
    task_inp->min_flt = min_flt;
    task_inp->utime = utime;
    task_inp->stime = stime;
+   task_inp->process_utilization = 0;
 
 
 
@@ -451,6 +527,7 @@ int __init mp3_init(void)
    // Set up the timer
    setup_timer(&my_timer, my_timer_callback, 0);
    //mod_timer(&my_timer, jiffies + msecs_to_jiffies(5000));
+   init_jiffy = jiffies;
 
    printk(KERN_ALERT "MP3MODULE LOADED\n");
    return 0;   
