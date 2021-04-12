@@ -484,13 +484,13 @@ static int device_close(struct inode *inode, struct file *flip) {
 
 /* Provides mmap function to char devices*/
 static int device_mmap(struct file *filp, struct vm_area_struct *vma){
-
+ printk(KERN_ALERT "[mmap]Inside the mmap function\n");
   int ret;
   unsigned long pfn, size;
   unsigned long start = vma->vm_start;
   unsigned long length = vma->vm_end - start;
   void *ptr = (void*) vmalloc_area;
-
+  printk(KERN_ALERT "[mmap] Value done\n");
   if (vma->vm_pgoff > 0 || length > BUFFER_BLOCK)
     return -EIO;
   while (length > 0) {
@@ -504,6 +504,7 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma){
     ptr += PAGE_SIZE;
     length -= PAGE_SIZE;
   }
+  printk(KERN_ALERT "[mmap] Done\n");
   return 0;
 
 }
