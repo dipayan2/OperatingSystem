@@ -1,4 +1,3 @@
-make
 sudo dmesg -C
 
 a=1
