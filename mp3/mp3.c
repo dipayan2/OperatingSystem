@@ -499,7 +499,7 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma){
   unsigned long pfn, size;
   unsigned long start = vma->vm_start;
   unsigned long length = vma->vm_end - start;
-  void *ptr = (void*) vmalloc_area;
+  char *ptr = (char*) vmalloc_area;
   printk(KERN_ALERT "[mmap] Value done\n");
   if (vma->vm_pgoff > 0 || length > BUFFER_BLOCK)
     return -EIO;
