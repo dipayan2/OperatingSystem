@@ -31,7 +31,7 @@ MODULE_DESCRIPTION("CS-423 MP3");
 
 #define DEBUG 1
 #define NPAGES 128
-#define PAGE_SIZE 4096
+//#define PAGE_SIZE 4096
 #define BUFFER_BLOCK (128*4*1024)
 #define DEVICENAME "mp3buf" // Name of the device
 
