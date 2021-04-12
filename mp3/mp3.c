@@ -119,6 +119,7 @@ static void memFunction(struct work_struct *work){
     spin_lock(&my_spin);
     list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp3_task_struct, list);
+      printk(KERN_ALERT "[MemFunc] The pid of the task : %d\n", tmp->pid );
       ret = get_cpu_use(tmp->pid, &minor_fault_count, &major_fault_count, &utime, &stime);
       if ( ret ){
         printk( "Process %ld does not exist anymore, will be removed\n", (long int)tmp->pid);
@@ -336,6 +337,7 @@ void handleDeReg(char *kbuf){
 
    //spin_lock(&my_spin);
    if(list_empty(&test_head)){
+      printk(KERN_ALERT "Deleted the workqueue\n");
       mydelete_workqueue();
       buffer_index = 0;
       init_jiffy = jiffies;
@@ -420,6 +422,9 @@ static ssize_t mp3_read (struct file *file, char __user *buffer, size_t count, l
          len += scnprintf(buf+len,count-len,"%d\n",entry->pid);
       }
       
+   }
+   else{
+      printk(KERN_ALERT "[Read] Empty list\n");
    }
    spin_unlock(&my_spin);
 
