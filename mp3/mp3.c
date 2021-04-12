@@ -56,8 +56,8 @@ void removeLeadSpace(char** ptr){
 struct fault_stats{
 
     unsigned long time_jiffies;
-    unsigned long total_minor_fault_count;
     unsigned long total_major_fault_count;
+    unsigned long total_minor_fault_count;   
     unsigned long cpu_utilization;
 };
 
