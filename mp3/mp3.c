@@ -30,7 +30,7 @@ MODULE_DESCRIPTION("CS-423 MP3");
 #define NPAGES 128
 #define PAGE_SIZE 4096
 #define BUFFER_BLOCK (128*4*1024)
-#define DEVIVCENAME "mp3buf"
+#define DEVICENAME "mp3buf"
 
 
 
@@ -106,22 +106,22 @@ static void memFunction(struct work_struct *work){
       return;
     }
 
-    data_ptr->jiffies_mark = jiffies;
+    data_ptr->time_jiffies = jiffies;
     data_ptr->total_minor_fault_count = 0;
     data_ptr->total_major_fault_count = 0;
     data_ptr->cpu_utilization = 0;
     
-    (data_ptr + 1)->jiffies_mark = -1; // for the last element
+    (data_ptr + 1)->time_jiffies = -1; // for the last element
   
    
 
     // should put a lock here, because the registration can cause inconsistent state.
     spin_lock(&my_spin);
-    list_for_each_safe(pos, q, & mp3_linked_list){
+    list_for_each_safe(pos, q, &test_head){
       tmp= list_entry(pos, struct mp3_task_struct, list);
       ret = get_cpu_use(tmp->pid, &minor_fault_count, &major_fault_count, &utime, &stime);
       if ( ret ){
-        printk( "Process %ld does not exist anymore, will be removed\n", tmp->pid);
+        printk( "Process %ld does not exist anymore, will be removed\n", (long int)tmp->pid);
         list_del(pos);
         kfree(tmp);
         buffer_index--;
@@ -136,8 +136,8 @@ static void memFunction(struct work_struct *work){
         tmp->process_utilization = ((utime + stime) * 10000) / (jiffies - init_jiffy);
 
         //Update stats on the buffer
-        data_ptr->total_minor_fault_count += tmp->minor_fault_count;
-        data_ptr->total_major_fault_count += tmp->major_fault_count;
+        data_ptr->total_minor_fault_count += tmp->min_flt;
+        data_ptr->total_major_fault_count += tmp->maj_flt;
         data_ptr->cpu_utilization         += tmp->process_utilization;
       }
     }
@@ -453,7 +453,7 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma){
   unsigned long length = vma->vm_end - start;
   void *ptr = (void*) vmalloc_area;
 
-  if (vma->vm_pgoff > 0 || length > BUFFER_SIZE)
+  if (vma->vm_pgoff > 0 || length > BUFFER_BLOCK)
     return -EIO;
   while (length > 0) {
     pfn = vmalloc_to_pfn(ptr);
@@ -487,6 +487,7 @@ struct file_operations mp3_cops = { /* these are the file operations provided by
 int __init mp3_init(void)
 {
    int i;
+   int ret;
    #ifdef DEBUG
    printk(KERN_ALERT "MP3 MODULE LOADING\n");
    #endif
@@ -502,7 +503,8 @@ int __init mp3_init(void)
        SetPageReserved(vmalloc_to_page((void *)(((unsigned long)vmalloc_area) + i)));
    }
    /* INIT CHARACTER DEVICE*/
-   if (alloc_chrdev_region(&dev_num,0,1,DEVICENAME) <0){
+   ret = alloc_chrdev_region(&dev_num,0,1,DEVICENAME);
+   if (ret<0){
          printk(KERN_INFO "Cannot allocate major number for device 1\n");
          return -1;
    }
@@ -539,6 +541,7 @@ int __init mp3_init(void)
 // mp1_exit - Called when module is unloaded
 void __exit mp3_exit(void)
 {
+   int i;
    #ifdef DEBUG
    printk(KERN_ALERT "MP3 MODULE UNLOADING\n");
    #endif
