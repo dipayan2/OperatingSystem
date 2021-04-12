@@ -247,6 +247,7 @@ void handleRegistration(char *kbuf){
    task_inp->utime = utime;
    task_inp->stime = stime;
    task_inp->process_utilization = 0;
+   task_inp->pid = pid_inp;
 
 
 
