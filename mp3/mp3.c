@@ -225,7 +225,7 @@ void handleRegistration(char *kbuf){
    pid_inp = (int)readVal[0];
    printk(KERN_ALERT "Register %d\n",pid_inp);
   
-   // Need to use kmem. for now using kmallloo
+  
    task_inp = (struct mp3_task_struct *) kmalloc(sizeof(struct mp3_task_struct),GFP_KERNEL); // need to free this memory
    if (!task_inp){
       printk(KERN_INFO "Unable to allocate pid_inp memory\n");
@@ -257,9 +257,13 @@ void handleRegistration(char *kbuf){
    }
    //create_workqueue();
    spin_lock(&my_spin);
-   list_add(&task_inp->list,&test_head);
+   list_add(&(task_inp->list),&test_head);
    spin_unlock(&my_spin);
 
+   // Check if the list if addedd
+   if(list_empty(&test_head)){
+      printk(KERN_ALERT "[Reg]Unable to add the element after Registration\n");
+   }
    return;
    
 }
@@ -503,6 +507,8 @@ int __init mp3_init(void)
    printk(KERN_ALERT "MP3 MODULE LOADING\n");
    #endif
    printk(KERN_ALERT "Hello World, this is MP3\n");
+      // Initilizing the linked list
+   INIT_LIST_HEAD(&test_head);
    // Initialize a block of memory using vmalloc
    vmalloc_area = vmalloc(NPAGES*PAGE_SIZE);
    if(!vmalloc_area){
@@ -531,8 +537,7 @@ int __init mp3_init(void)
    }
 
 
-   // Initilizing the linked list
-   INIT_LIST_HEAD(&test_head);
+
    // Created the directory
    mp3_dir = proc_mkdir("mp3", NULL);
    // Adding the files
