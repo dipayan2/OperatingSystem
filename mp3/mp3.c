@@ -365,16 +365,16 @@ void handleDeReg(char *kbuf){
    }
 
    //spin_lock(&my_spin);
-   mutex_lock(&my_mutex);
+ //  mutex_lock(&my_mutex);
    if(list_empty(&test_head)){
-      
+      printk(KERN_ALERT "[DeReg]Entering thr del workqueue");
       mydelete_workqueue();
       printk(KERN_ALERT "Deleted the workqueue\n");
       buffer_index = 0;
       init_jiffy = jiffies;
    }
  // spin_unlock(&my_spin);
- mutex_unlock(&my_mutex);
+// mutex_unlock(&my_mutex);
 
 
    //delete_workqueue();
