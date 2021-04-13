@@ -6,6 +6,7 @@ while [ $a -le 20 ]
 	echo $a
     sudo insmod mp3.ko
 	sudo mknod node c 248 0
+    sudo rm profile3_$a.data
 
 	while [ $b -le $a ]
 	do
