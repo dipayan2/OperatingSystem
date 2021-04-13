@@ -42,6 +42,9 @@ MODULE_DESCRIPTION("CS-423 MP3");
 static DEFINE_SPINLOCK(my_spin);
 static DEFINE_MUTEX(my_mutex);
 
+/*
+* FILLER FUINCTION : To remove the white space in the buffer
+*/
 void removeLeadSpace(char** ptr){
    while(**ptr != '\0'){
       if (**ptr == ' '){
@@ -55,7 +58,9 @@ void removeLeadSpace(char** ptr){
 }
 
 
-/*This is where all the data is updated*/
+/**
+ * Data structure to store the data in vmalloc buffer , get cpu_util and jiffies and faults
+ * **/
 
 struct fault_stats{
 
@@ -66,15 +71,17 @@ struct fault_stats{
 };
 
 
-//Linked list header
-static struct workqueue_struct *my_wq;
-struct work_struct my_work;
-struct list_head test_head;
-static struct timer_list my_timer;
-struct fault_stats* vmalloc_area; // for vmalloc usage
+static struct workqueue_struct *my_wq; // Work Queue
+struct work_struct my_work; // Work variable
+struct list_head test_head; // Linked list to store registered process
+static struct timer_list my_timer; // Timer Interrupt
+struct fault_stats* vmalloc_area; // vmalloc pointer variable
 unsigned long buffer_index = 0;
-unsigned long init_jiffy;
+unsigned long init_jiffy; // Variable to store when new work queue was created
 int init_wq = 0;
+/**
+ * Enhanced PCB
+ * **/
 struct mp3_task_struct {
   struct task_struct *linux_task;
   struct list_head list;
@@ -84,6 +91,11 @@ struct mp3_task_struct {
   unsigned long maj_flt;
 };
 
+
+/**
+ * Bottom Handler
+ * WorkQueue Task : Triggered by timer , this function updates the fault count and utilization to the vmalloc area
+ * **/
 
 static void memFunction(struct work_struct *work){
     int ret;
@@ -158,6 +170,10 @@ static void memFunction(struct work_struct *work){
 }
 
 
+/**
+ * Timer Handler : Top Half
+ * 
+ * **/
 
 void my_timer_callback(unsigned long data) {
   //printk(KERN_ALERT "This line is printed after 5 seconds.\n");
@@ -174,6 +190,7 @@ void my_timer_callback(unsigned long data) {
 }
 int mycreate_workqueue(void){
    init_wq = 1;
+   init_jiffy = jiffies;
    my_wq = create_workqueue("mp3q");
    INIT_WORK(&my_work, memFunction); // Attached function to the work
    queue_work(my_wq, &my_work); 
@@ -290,6 +307,9 @@ void handleRegistration(char *kbuf){
    
 }
 
+/**
+ * DeRegistration of Process Handler
+ * **/
 
 void handleDeReg(char *kbuf){
    printk(KERN_ALERT "Handle Dereg\n");
