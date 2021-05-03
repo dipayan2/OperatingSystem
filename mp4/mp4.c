@@ -47,6 +47,7 @@
 #include <linux/string.h>
 #include "mp4_given.h"
 
+#define TARGETLEN 50
 /**
  * get_inode_sid - Get the inode mp4 security label id
  *
@@ -57,12 +58,50 @@
  */
 static int get_inode_sid(struct inode *inode)
 {
-	/*
-	 * Add your code here
-	 * ...
-	 */
+	
+	int rc = -1;
+	struct dentry *dentry;
+	char *attrVal = NULL;
+	int len = 0;
+	int sid = 0;
 
-	return 0;
+	// Check if inode exists
+	if (!inode || !inode->i_op || !inode->i_op->getxattr) {
+		pr_info("No inode security found\n");
+		return 0;
+	}
+	dentry = d_find_alias(inode);
+	if (!dentry){
+		pr_err("Denrty no found\n");
+		return 0;
+	}
+	len = TARGETLEN;
+	attrVal = (char*)kmalloc(sizeof(char)*len, GFP_KERNEL);
+	if (!attrVal){
+		dput(dentry);
+		return 0;
+	}
+
+	rc = inode->i_op->getxattr(dentry, "security.mp4", pathname, len*sizeof(char));
+	if(rc == -ERANGE){
+		/* Needs a larger buffer*/
+		/**
+		 * Will handle later
+		 * **/
+		dput(dentry);
+		kfree(attrVal);
+		return 0;
+	}
+	dput(dentry);
+	if(rc<0){
+		kfree(attrVal);
+		attrVal = NULL;
+		return 0;
+	}
+	// Actual result
+	sid = __cred_ctx_to_sid(attrVal);
+	kfree(attrVal);
+	return sid;
 }
 
 /**
@@ -96,9 +135,10 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
 
 	tsec = kzalloc(sizeof(struct task_security_struct), gfp);
 	
-	if (!tsec)
+	if (!tsec){
 		pr_err("No memroy is cred_alloc_blank");
 		return -ENOMEM;
+	}
 	tsec->mp4_flags = MP4_NO_ACCESS;
 	cred->security = tsec;
 	return 0;
@@ -135,7 +175,22 @@ static void mp4_cred_free(struct cred *cred)
 static int mp4_cred_prepare(struct cred *new, const struct cred *old,
 			    gfp_t gfp)
 {
-	
+	struct mp4_security *tsec;
+	const struct mp4_security* old_sec;
+	if(!old){
+		pr_err("Old cred is NULL\n");
+		return mp4_cred_alloc_blank(new,gfp);
+	}
+	old_sec = old->security;
+	if (!old_sec){
+		pr_err("Old cred  security is NULL\n");
+		return mp4_cred_alloc_blank(new,gfp);
+	}
+	tsec = kmemdup(old_tsec, sizeof(struct task_security_struct), gfp);
+	if (!tsec){
+		return -ENOMEM;
+	}
+	new->security = tsec;
 	return 0;
 }
 
