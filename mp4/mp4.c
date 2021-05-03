@@ -165,6 +165,9 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 		if (curr_sec == NULL){
 			// Set the security
 			tmp = mp4_cred_alloc_blank(curr_cred,GFP_KERNEL);
+			if(tmp != 0){
+				return tmp;
+			}
 			
 		}
 		curr_sec = curr_cred->security;
