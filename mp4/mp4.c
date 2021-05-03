@@ -430,7 +430,7 @@ static struct security_hook_list mp4_hooks[] = {
 	/*
 	 * inode function to assign a label and to check permission
 	 */
-	LSM_HOOK_INIT(inode_init_security, mp4_inode_init_security),
+	//LSM_HOOK_INIT(inode_init_security, mp4_inode_init_security),
 	LSM_HOOK_INIT(inode_permission, mp4_inode_permission),
 
 	/*
