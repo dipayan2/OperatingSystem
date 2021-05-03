@@ -250,7 +250,7 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 				   const struct qstr *qstr,
 				   const char **name, void **value, size_t *len)
 {
-	
+	pr_info("Init  security\n");
 	struct mp4_security *curr_sec;
 	int proc_sid;
 	struct cred *curr_cred;
@@ -322,6 +322,7 @@ static int mp4_has_permission(int ssid, int osid, int mask)
 {
 
 	// check if the mask should allow the object
+	pr_info("Has  security\n");
 	if(ssid== MP4_TARGET_SID){
 		// Do things
 		if(osid==MP4_NO_ACCESS){
@@ -373,6 +374,7 @@ static int mp4_has_permission(int ssid, int osid, int mask)
  */
 static int mp4_inode_permission(struct inode *inode, int mask)
 {
+	pr_info("Perm  security\n");
 	const struct cred *curr_cred;
 	struct mp4_security *tsec;
 	struct mp4_security *curr_sec;
