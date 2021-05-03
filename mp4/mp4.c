@@ -7,6 +7,44 @@
 #include <linux/cred.h>
 #include <linux/dcache.h>
 #include <linux/binfmts.h>
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/kernel.h>
+#include <linux/ptrace.h>
+#include <linux/errno.h>
+#include <linux/sched.h>
+#include <linux/security.h>
+#include <linux/xattr.h>
+#include <linux/capability.h>
+#include <linux/unistd.h>
+#include <linux/mm.h>
+#include <linux/mman.h>
+#include <linux/slab.h>
+#include <linux/pagemap.h>
+#include <linux/swap.h>
+#include <linux/smp_lock.h>
+#include <linux/spinlock.h>
+#include <linux/syscalls.h>
+#include <linux/file.h>
+#include <linux/namei.h>
+#include <linux/mount.h>
+#include <linux/ext2_fs.h>
+#include <linux/proc_fs.h>
+#include <linux/fs.h>
+#include <linux/kd.h>
+#include <linux/stat.h>
+#include <asm/uaccess.h>
+#include <asm/ioctls.h>
+#include <linux/bitops.h>
+#include <linux/interrupt.h>
+#include <linux/quota.h>
+#include <linux/parser.h>
+#include <linux/nfs_mount.h>
+#include <linux/hugetlb.h>
+#include <linux/personality.h>
+#include <linux/sysctl.h>
+#include <linux/audit.h>
+#include <linux/string.h>
 #include "mp4_given.h"
 
 /**
@@ -23,6 +61,7 @@ static int get_inode_sid(struct inode *inode)
 	 * Add your code here
 	 * ...
 	 */
+
 	return 0;
 }
 
@@ -51,10 +90,17 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
  */
 static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
 {
-	/*
-	 * Add your code here
-	 * ...
-	 */
+	
+
+	struct mp4_security *tsec;
+
+	tsec = kzalloc(sizeof(struct task_security_struct), gfp);
+	
+	if (!tsec)
+		pr_err("No memroy is cred_alloc_blank");
+		return -ENOMEM;
+	tsec->mp4_flags = MP4_NO_ACCESS;
+	cred->security = tsec;
 	return 0;
 }
 
@@ -66,11 +112,16 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
  *
  */
 static void mp4_cred_free(struct cred *cred)
-{
-	/*
-	 * Add your code here
-	 * ...
-	 */
+{	
+	//  Check if the cred security is not null
+	struct mp4_security *tsec;
+	tsec = cred->security;
+	if(tsec != NULL){
+		pr_info("Memory freed mp4_cred_free");
+		kfree(tsec);
+	}
+	cred->security = NULL;
+	return;
 }
 
 /**
@@ -84,6 +135,7 @@ static void mp4_cred_free(struct cred *cred)
 static int mp4_cred_prepare(struct cred *new, const struct cred *old,
 			    gfp_t gfp)
 {
+	
 	return 0;
 }
 
