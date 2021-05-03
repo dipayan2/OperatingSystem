@@ -322,11 +322,11 @@ static int mp4_has_permission(int ssid, int osid, int mask)
 {
 
 	// check if the mask should allow the object
-	pr_info("Has  security\n");
+	//pr_info("Has  security\n");
 	if(ssid== MP4_TARGET_SID){
 		// Do things
 		if(osid==MP4_NO_ACCESS){
-			pr_info("Access denied");
+			//pr_info("Access denied");
 			return -EACCES;
 		}
 		if(osid==MP4_READ_OBJ && (mask&(MAY_READ))){
@@ -351,7 +351,7 @@ static int mp4_has_permission(int ssid, int osid, int mask)
 			return 0;
 		}
 		else{
-			pr_info("Access Denied\n");
+			//pr_info("Access Denied\n");
 			return -EACCES;
 		}
 	}
@@ -394,26 +394,26 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 		return -EACCES;
 	}
 	
-	dentry = d_find_alias(inode);
-	if (!dentry){
-		//pr_err("Denrty no found\n");
+	// dentry = d_find_alias(inode);
+	// if (!dentry){
+	// 	//pr_err("Denrty no found\n");
 		
-	}else{
-		buffer = (char *)__get_free_page(GFP_KERNEL);
-		if (!buffer){
-			// No buffer thind
-		}else{
-			path = dentry_path_raw(dentry, buffer, PAGE_SIZE);
-			free_page((unsigned long)buffer);
-		}
+	// }else{
+	// 	buffer = (char *)__get_free_page(GFP_KERNEL);
+	// 	if (!buffer){
+	// 		// No buffer thind
+	// 	}else{
+	// 		path = dentry_path_raw(dentry, buffer, PAGE_SIZE);
+	// 		free_page((unsigned long)buffer);
+	// 	}
 
-		dput(dentry);
-	}
-	if(path != NULL ){
-		if(mp4_should_skip_path(path)){
-			return 0;
-		}
-	}
+	// 	dput(dentry);
+	// }
+	// if(path != NULL ){
+	// 	if(mp4_should_skip_path(path)){
+	// 		return 0;
+	// 	}
+	// }
 	ssid = curr_sec->mp4_flags;
 	osid = get_inode_sid(inode);
 	return mp4_has_permission(ssid,osid,mask);
