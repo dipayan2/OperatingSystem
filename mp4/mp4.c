@@ -322,7 +322,7 @@ static int mp4_has_permission(int ssid, int osid, int mask)
 {
 
 	// check if the mask should allow the object
-	pr_info("Has  security\n");
+	//pr_info("Has  security\n");
 	if(ssid== MP4_TARGET_SID){
 		// Do things
 		if(osid==MP4_NO_ACCESS){
@@ -383,15 +383,15 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 	char *buffer, *path;
 	path = NULL;
 	if(!inode){
-		return -EACCES;
+		return 0;
 	}
 	curr_cred = current_cred();
 	if(!curr_cred){
-		return -EACCES;
+		return 0;
 	}
 	curr_sec= curr_cred->security;
 	if (!curr_sec){
-		return -EACCES;
+		return 0;
 	}
 	
 	// dentry = d_find_alias(inode);
