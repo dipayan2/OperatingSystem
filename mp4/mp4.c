@@ -250,10 +250,49 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 				   const struct qstr *qstr,
 				   const char **name, void **value, size_t *len)
 {
-	/*
-	 * Add your code here
-	 * ...
-	 */
+	
+	struct mp4_security *curr_sec;
+	int proc_sid;
+	struct cred *curr_cred;
+	int new_sid;
+	struct mp4_security *isec;// = inode->i_security;
+	char *namep = NULL;
+	char *context;
+
+
+
+	// Get the sid of the process
+	curr_cred = current_cred();
+	if(!curr_cred){
+		pr_info("No cred found");
+		return 0;
+	}
+	curr_sec = curr_cred->security;
+	if(!curr_sec){
+		pr_info("No security module for current proc found");
+		return 0;
+	}
+	if (curr_sec->mp4_flags == MP4_TARGET_SID){
+		//Do things 
+		// set I node attribute to read-write
+		new_sid = MP4_READ_WRITE;
+		isec = inode->i_security;
+		isec->mp4_flags = MP4_READ_WRITE;
+		if(name){
+			namep = kstrdup(XATTR_MP4_SUFFIX, GFP_KERNEL);
+			if(!namep){
+				return -ENOMEM;
+			}
+			*name = namep;
+		}
+		if (value && len){
+			strcpy(context,"read-write");
+			*value = context;
+			*len = strlen(context);
+		}
+
+
+	}
 	return 0;
 }
 
