@@ -381,6 +381,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 	struct dentry *dentry;
 	int ssid, osid;
 	char *buffer, *path;
+	path = NULL;
 	if(!inode){
 		return -EACCES;
 	}
@@ -403,15 +404,15 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 			// No buffer thind
 		}else{
 			path = dentry_path_raw(dentry, buffer, PAGE_SIZE);
-			if(path!=NULL){
-				if(mp4_should_skip_path(path)){
-					return 0;
-				}
-			}
 			free_page((unsigned long)buffer);
 		}
 
 		dput(dentry);
+	}
+	if(path != NULL ){
+		if(mp4_should_skip_path(path)){
+			return 0;
+		}
 	}
 	ssid = curr_sec->mp4_flags;
 	osid = get_inode_sid(inode);
