@@ -326,7 +326,7 @@ static int mp4_has_permission(int ssid, int osid, int mask)
 		// Do things
 		if(osid==MP4_NO_ACCESS){
 			pr_info("Access denied");
-			return -EACCESS;
+			return -EACCES;
 		}
 		if(osid==MP4_READ_OBJ && (mask&(MAY_READ))){
 			return 0;
@@ -351,7 +351,7 @@ static int mp4_has_permission(int ssid, int osid, int mask)
 		}
 		else{
 			pr_info("Access Denied\n");
-			return -EACCESS;
+			return -EACCES;
 		}
 	}
 	else{
@@ -386,7 +386,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 	}
 	curr_sec= curr_cred->security;
 	if (!curr_sec){
-		return -EACCESS;
+		return -EACCES;
 	}
 	ssid = curr_sec->mp4_flags;
 	osid = get_inode_sid(inode);
