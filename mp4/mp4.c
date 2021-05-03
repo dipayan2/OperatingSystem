@@ -374,7 +374,7 @@ static int mp4_has_permission(int ssid, int osid, int mask)
  */
 static int mp4_inode_permission(struct inode *inode, int mask)
 {
-	pr_info("Perm  security\n");
+	// pr_info("Perm  security\n");
 	const struct cred *curr_cred;
 	struct mp4_security *tsec;
 	struct mp4_security *curr_sec;
