@@ -104,21 +104,6 @@ static int get_inode_sid(struct inode *inode)
 	return sid;
 }
 
-/**
- * mp4_bprm_set_creds - Set the credentials for a new task
- *
- * @bprm: The linux binary preparation structure
- *
- * returns 0 on success.
- */
-static int mp4_bprm_set_creds(struct linux_binprm *bprm)
-{
-	/*
-	 * Add your code here
-	 * ...
-	 */
-	return 0;
-}
 
 /**
  * mp4_cred_alloc_blank - Allocate a blank mp4 security label
@@ -133,7 +118,7 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
 
 	struct mp4_security *tsec;
 
-	tsec = kzalloc(sizeof(struct task_security_struct), gfp);
+	tsec = (struct mp4_security *) kzalloc(sizeof(struct mp4_security), gfp);
 	
 	if (!tsec){
 		pr_err("No memroy is cred_alloc_blank");
@@ -143,6 +128,61 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
 	cred->security = tsec;
 	return 0;
 }
+
+/**
+ * mp4_bprm_set_creds - Set the credentials for a new task
+ *
+ * @bprm: The linux binary preparation structure
+ *
+ * returns 0 on success.
+ */
+static int mp4_bprm_set_creds(struct linux_binprm *bprm)
+{
+	// Get inode of the creating process
+	int rc = 0;	
+	int tmp;
+	int newSid;
+	struct mp4_security *curr_sec;
+	struct cred *curr_cred;
+	struct inode *inode = file_inode(bprm->file);
+
+	// Get the current cred
+	curr_cred = current_cred();
+
+	if (!curr_cred){
+		pr_err("No cred found, exiting!!");
+		return 1;
+	}
+	// Get the inode cred
+	if (!inode){
+		pr_err("No inode found\n");
+		return 1;
+	}
+
+	newSid = get_inode_sid(inode); // this is what we need to do
+	if (newSid == MP4_TARGET_SID){
+		// Do things
+		curr_sec = curr_cred->security;
+		if (curr_sec == NULL){
+			// Set the security
+			tmp = mp4_cred_alloc_blank(curr_cred);
+			
+		}
+		curr_sec = curr_cred->security;
+		curr_sec->mp4_flags = MP4_TARGET_SID;
+		
+	}
+	else{
+		// Don't do anything
+		return 0;
+	}
+
+
+	
+	return 0;
+}
+
+
 
 
 /**
@@ -186,7 +226,7 @@ static int mp4_cred_prepare(struct cred *new, const struct cred *old,
 		pr_err("Old cred  security is NULL\n");
 		return mp4_cred_alloc_blank(new,gfp);
 	}
-	tsec = kmemdup(old_tsec, sizeof(struct task_security_struct), gfp);
+	tsec = kmemdup(old_tsec, sizeof(struct mp4_security), gfp);
 	if (!tsec){
 		return -ENOMEM;
 	}
