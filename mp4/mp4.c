@@ -378,7 +378,9 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 	const struct cred *curr_cred;
 	struct mp4_security *tsec;
 	struct mp4_security *curr_sec;
+	struct dentry *dentry;
 	int ssid, osid;
+	char *buffer, *path;
 	if(!inode){
 		return -EACCES;
 	}
@@ -389,6 +391,27 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 	curr_sec= curr_cred->security;
 	if (!curr_sec){
 		return -EACCES;
+	}
+	
+	dentry = d_find_alias(inode);
+	if (!dentry){
+		//pr_err("Denrty no found\n");
+		
+	}else{
+		buffer = (char *)__get_free_page(GFP_KERNEL);
+		if (!buffer){
+			// No buffer thind
+		}else{
+			path = dentry_path_raw(dentry, buffer, PAGE_SIZE);
+			if(path!=NULL){
+				if(mp4_should_skip_path(path)){
+					return 0;
+				}
+			}
+			free_page((unsigned long)buffer);
+		}
+
+		dput(dentry);
 	}
 	ssid = curr_sec->mp4_flags;
 	osid = get_inode_sid(inode);
