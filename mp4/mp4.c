@@ -259,6 +259,14 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 	char *namep = NULL;
 	char *context;
 
+	if(!inode){
+		pr_err("Empty Inode");
+		return 0;
+	}
+	if (!dir){
+		pr_err("Empty Dir");
+		return 0;
+	}
 
 
 	// Get the sid of the process
@@ -276,8 +284,8 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 		//Do things 
 		// set I node attribute to read-write
 		new_sid = MP4_READ_WRITE;
-		isec = inode->i_security;
-		isec->mp4_flags = MP4_READ_WRITE;
+		//isec = inode->i_security;
+		//isec->mp4_flags = MP4_READ_WRITE;
 		if(name){
 			namep = kstrdup(XATTR_MP4_SUFFIX, GFP_KERNEL);
 			if(!namep){
@@ -286,7 +294,11 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 			*name = namep;
 		}
 		if (value && len){
-			strcpy(context,"read-write");
+			context = kstrdup("read-write", GFP_KERNEL);
+			if (!context){
+				kfree(namep);
+				return -ENOMEM;
+			}
 			*value = context;
 			*len = strlen(context);
 		}
@@ -308,10 +320,43 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
  */
 static int mp4_has_permission(int ssid, int osid, int mask)
 {
-	/*
-	 * Add your code here
-	 * ...
-	 */
+
+	// check if the mask should allow the object
+	if(ssid== MP4_TARGET_SID){
+		// Do things
+		if(osid==MP4_NO_ACCESS){
+			pr_info("Access denied");
+			return -EACCESS;
+		}
+		if(osid==MP4_READ_OBJ && (mask&(MAY_READ))){
+			return 0;
+		}
+		if(osid == MP4_WRITE_OBJ && (mask&(MAY_WRITE|MAY_APPEND))){
+			return 0;
+		}
+		if(osid == MP4_READ_WRITE && (mask&(MAY_READ|MAY_WRITE|MAY_APPEND))){
+			return 0;
+		}
+		if(osid == MP4_EXEC_OBJ && (mask&(MAY_EXEC))){
+			return 0;
+		}
+		if(osid == MP4_RW_DIR && (mask&(MAY_READ|MAY_WRITE|MAY_APPEND))){
+			return 0;
+		}
+		if(osid == MP4_READ_DIR && (mask&(MAY_READ|MAY_WRITE|MAY_APPEND|MAY_EXEC))){
+			return 0;
+		}
+		if(osid == MP4_TARGET_SID && (mask&(MAY_READ|MAY_WRITE|MAY_APPEND|MAY_EXEC))){
+			return 0;
+		}
+		else{
+			pr_info("Access Denied\n");
+			return -EACCESS;
+		}
+	}
+	else{
+		return 0;
+	}
 	return 0;
 }
 
@@ -328,11 +373,24 @@ static int mp4_has_permission(int ssid, int osid, int mask)
  */
 static int mp4_inode_permission(struct inode *inode, int mask)
 {
-	/*
-	 * Add your code here
-	 * ...
-	 */
-	return 0;
+	const struct cred *curr_cred;
+	struct mp4_security *tsec;
+	struct mp4_security *curr_sec;
+	int ssid, osid;
+	if(!inode){
+		return -EACCES;
+	}
+	curr_cred = current_cred();
+	if(!curr_cred){
+		return -EACCES;
+	}
+	curr_sec= curr_cred->security;
+	if (!curr_sec){
+		return -EACCESS;
+	}
+	ssid = curr_sec->mp4_flags;
+	osid = get_inode_sid(inode);
+	return mp4_has_permission(ssid,osid,mask);
 }
 
 

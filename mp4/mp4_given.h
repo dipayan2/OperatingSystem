@@ -4,6 +4,14 @@
 #include <uapi/linux/xattr.h>
 #include <linux/fs.h>
 
+/**
+#define MAY_EXEC		0x00000001
+#define MAY_WRITE		0x00000002
+#define MAY_READ		0x00000004
+#define MAY_APPEND		0x00000008
+**/
+
+
 /* mp4 extended attributed */
 #define XATTR_MP4_SUFFIX "mp4"
 #define XATTR_NAME_MP4 XATTR_SECURITY_PREFIX XATTR_MP4_SUFFIX
