@@ -150,12 +150,12 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 
 	if (!curr_cred){
 		pr_err("No cred found, exiting!!");
-		return 1;
+		return -ENOMEM;
 	}
 	// Get the inode cred
 	if (!inode){
 		pr_err("No inode found\n");
-		return 1;
+		return -ENOMEM;
 	}
 
 	newSid = get_inode_sid(inode); // this is what we need to do
@@ -322,7 +322,7 @@ static int mp4_has_permission(int ssid, int osid, int mask)
 {
 
 	// check if the mask should allow the object
-	//pr_info("Has  security\n");
+	pr_info("Has  security\n");
 	if(ssid== MP4_TARGET_SID){
 		// Do things
 		if(osid==MP4_NO_ACCESS){
