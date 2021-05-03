@@ -81,7 +81,7 @@ static int get_inode_sid(struct inode *inode)
 		return 0;
 	}
 
-	rc = inode->i_op->getxattr(dentry, "security.mp4", pathname, len*sizeof(char));
+	rc = inode->i_op->getxattr(dentry, "security.mp4", attrVal, len*sizeof(char));
 	if(rc == -ERANGE){
 		/* Needs a larger buffer*/
 		/**
@@ -164,7 +164,7 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 		curr_sec = curr_cred->security;
 		if (curr_sec == NULL){
 			// Set the security
-			tmp = mp4_cred_alloc_blank(curr_cred);
+			tmp = mp4_cred_alloc_blank(curr_cred,GFP_KERNEL);
 			
 		}
 		curr_sec = curr_cred->security;
@@ -225,7 +225,7 @@ static int mp4_cred_prepare(struct cred *new, const struct cred *old,
 		pr_err("Old cred  security is NULL\n");
 		return mp4_cred_alloc_blank(new,gfp);
 	}
-	tsec = kmemdup(old_tsec, sizeof(struct mp4_security), gfp);
+	tsec = kmemdup(old_sec, sizeof(struct mp4_security), gfp);
 	if (!tsec){
 		return -ENOMEM;
 	}
