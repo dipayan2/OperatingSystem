@@ -196,7 +196,7 @@ static void mp4_cred_free(struct cred *cred)
 	struct mp4_security *tsec;
 	tsec = cred->security;
 	if(tsec != NULL){
-		pr_info("Memory freed mp4_cred_free");
+		//pr_info("Memory freed mp4_cred_free");
 		kfree(tsec);
 	}
 	cred->security = NULL;
