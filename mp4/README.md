@@ -35,7 +35,7 @@ This hook is partially implemented with the function `mp4_inode_permission` comp
 
 
 
-### Details about the test cases that you used to verify that your security module is working
+### Test Cases
 
 I created two tests scripts called `test.perm` and `test.perm.unload` at the home directory:
 `test.perm`:
