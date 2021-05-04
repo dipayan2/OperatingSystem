@@ -58,4 +58,5 @@ To run the tests:
 Source the script by  `source test.perm
 Then unloaded the script by `source test.perm.unload`
 
-
+### pwd policy
+In the file `pwd_perm.txt` I have the set of files accessed to change password and we would need to `setattr` to them, but due to lack of time, I just addedd the file
