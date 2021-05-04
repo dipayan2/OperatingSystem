@@ -1,0 +1,5 @@
+sudo setfattr -n security.mp4 -v target /bin/cat
+sudo setfattr -n security.mp4 -v dir /home
+sudo setfattr -n security.mp4 -v dir /home/dipayan2/
+sudo setfattr -n security.mp4 -v dir /home/dipayan2/dipayan2/
+sudo setfattr -n security.mp4 -v read-only /home/dipayan2/dipayan2/file.txt
