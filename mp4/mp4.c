@@ -150,9 +150,7 @@ static int mp4_bprm_set_creds(struct linux_binprm *bprm)
 		curr_blob -> mp4_flags = osid;
 	}
 
-	// if(printk_ratelimit()) {
-	// 	pr_info("4th HOOK: mp4_bprm_set_creds succeeds!");
-	// }
+
 
 	return 0;
 }
@@ -185,10 +183,6 @@ static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
 	 //hook the void pointer from cred to the new security blob we created
 	 cred -> security = my_security_blob;
 
-	 //pr_info("1ST HOOK: mp4_cred_alloc_blank succeeds!");
-	//  if(printk_ratelimit()) {
- 	// 		pr_info("1ST HOOK: mp4_cred_alloc_blank succeeds!");
- 	// 	 }
 
 	 return 0;
 }
@@ -226,7 +220,7 @@ static void mp4_cred_free(struct cred *cred)
 	 kfree(cred->security);
 	 cred->security = NULL;
 
-	 //pr_info("3RD HOOK: mp4_cred_free succeeds!");
+	 
 }
 
 /**
@@ -265,7 +259,6 @@ static int mp4_cred_prepare(struct cred *new, const struct cred *old, gfp_t gfp)
 		new->security = new_blob;
 	}
 
-	//pr_info("2ND hook: mp4_cred_prepare works!");
 
 	return 0;
 
@@ -285,16 +278,6 @@ static int mp4_cred_prepare(struct cred *new, const struct cred *old, gfp_t gfp)
  *
  */
 
- /*
- 	This hook is responsible for setting the xattr of a newly created inode.
-    This value will depend on whether the task that creates this inode has the target sid or not:
-    1. For those inodes that were created by a target process, they should always be labeled with the read-write attribute.
-    2. For all other inodes, you should not set any xattr value.
-*/
-
-//about "dir-write"
-//https://piazza.com/class/jcgqvneo9tn1o0?cid=418
-//https://elixir.bootlin.com/linux/v4.3/source/include/linux/lsm_hooks.h#L168
 
 static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 				   const struct qstr *qstr,
@@ -337,17 +320,17 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 	// put the value and length
 	if(task_sid == MP4_TARGET_SID) {
 		//if inode is a directory, set xattr to "dir-write", else set to "read-write"
-		if(S_ISDIR(inode->i_mode)) {
-			value_ptr = kstrdup("dir-write", GFP_KERNEL);
-			//error handling
-			if (!value_ptr) {
-				return -ENOMEM;
-			}
-			*value = value_ptr;
+		// if(S_ISDIR(inode->i_mode)) {
+		// 	value_ptr = kstrdup("dir-write", GFP_KERNEL);
+		// 	//error handling
+		// 	if (!value_ptr) {
+		// 		return -ENOMEM;
+		// 	}
+		// 	*value = value_ptr;
 
-			//put length
-			*len = 10;
-		} else {
+		// 	//put length
+		// 	*len = 10;
+		// } else {
 			//put value
 			value_ptr = kstrdup("read-write", GFP_KERNEL);
 			//error handling
@@ -358,7 +341,7 @@ static int mp4_inode_init_security(struct inode *inode, struct inode *dir,
 
 			//put length
 			*len = 11;
-		}
+		//}
 
 	} else {
 		return -EOPNOTSUPP;
@@ -449,8 +432,7 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 		 return 0;
 	 }
 
-	 // Your code MUST first obtain the path of the inode being checked, and then use the helper function to skip over certain paths heavily used during boot time.
-
+	 
 	 //get the dentry for getting dir name
 	 if(!inode) {
 		 return -EACCES;
@@ -469,12 +451,6 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 		 return -EACCES;
 	 }
 
-    //  buf = memset(buf, '\0', len);
-	//  if(!buf) {
-	// 	 if(dentry)
-	// 	 	dput(dentry);
-	// 	 return -EACCES;
-	//  }
 
 	 if(!dentry) {
 		 return -EACCES;
@@ -526,12 +502,13 @@ static int mp4_inode_permission(struct inode *inode, int mask)
 	 authorized = ret == 0 ? 1 : 0;
 	 /* Then, use this code to print relevant denials: for our processes or on our objects */
 	 if(printk_ratelimit()) {
-	 	pr_info("Currently handling task ssid: %d, inode osid: %d. Authorized ? : %d.\n", ssid, osid, authorized);
+	 	pr_info("[inode Perm] handling task ssid: %d, inode osid: %d. Authorized ? : %d.\n", ssid, osid, authorized);
  	 }
 
 
- 	 if(dentry)
+ 	 if(dentry){
 	 	dput(dentry);
+	}
 	 kfree(buf);
 	 return ret; /* permissive */
 	 //return 0;
@@ -568,7 +545,7 @@ static __init int mp4_init(void)
 	if (!security_module_enable("mp4"))
 		return 0;
 
-	pr_info("Mytest for 1st-6th hooks: mp4 LSM initializing..");
+	pr_info("mp4 LSM initializing..");
 
 	/*
 	 * Register the mp4 hooks with lsm
