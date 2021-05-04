@@ -438,7 +438,7 @@ static struct security_hook_list mp4_hooks[] = {
 	 * setting the credentials subjective security label when laucnhing a
 	 * binary
 	 */
-	LSM_HOOK_INIT(bprm_set_creds, mp4_bprm_set_creds),
+	//LSM_HOOK_INIT(bprm_set_creds, mp4_bprm_set_creds),
 
 	/* credentials handling and preparation */
 	LSM_HOOK_INIT(cred_alloc_blank, mp4_cred_alloc_blank),
