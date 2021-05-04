@@ -42,15 +42,16 @@ I created two tests scripts called `test.perm` and `test.perm.unload` at the hom
 
 setfattr -n security.mp4 -v target /bin/cat
 setfattr -n security.mp4 -v dir /home
-setfattr -n security.mp4 -v dir ~
-setfattr -n security.mp4 -v read-only ~/file.txt
+setfattr -n security.mp4 -v dir /home/dipayan2/
+setfattr -n security.mp4 -v dir /home/dipayan2/dipayan2/
+setfattr -n security.mp4 -v read-only /home/dipayan2/dipayan2/file.txt
 
 `test.perm.unload`:
 
 setfattr -x security.mp4 /bin/cat
 setfattr -x security.mp4 /home
-sudo setfattr -x security.mp4 ~
-sudo setfattr -x security.mp4 ~/file.txt
+setfattr -x security.mp4 ~
+setfattr -x security.mp4 ~/file.txt
 
 
 To run the tests:
