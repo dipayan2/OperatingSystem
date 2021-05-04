@@ -114,7 +114,7 @@ static int get_inode_sid(struct inode *inode)
 static int mp4_cred_alloc_blank(struct cred *cred, gfp_t gfp)
 {
 	
-
+	pr_info("Alloc Blank");
 	struct mp4_security *tsec;
 
 	tsec = (struct mp4_security *) kzalloc(sizeof(struct mp4_security), gfp);
@@ -330,7 +330,8 @@ static int mp4_has_permission(int ssid, int osid, int mask)
 		// Do things
 		if(osid==MP4_NO_ACCESS){
 			//pr_info("Access denied");
-			return -EACCES;
+			return 0;
+			//return -EACCES;
 		}
 		if(osid==MP4_READ_OBJ && (mask&(MAY_READ))){
 			return 0;
@@ -354,8 +355,8 @@ static int mp4_has_permission(int ssid, int osid, int mask)
 			return 0;
 		}
 		else{
-			//pr_info("Access Denied\n");
-			return -EACCES;
+			pr_info("Access Denied\n");
+			return 0;
 		}
 	}
 	else{
@@ -430,7 +431,7 @@ static struct security_hook_list mp4_hooks[] = {
 	/*
 	 * inode function to assign a label and to check permission
 	 */
-	//LSM_HOOK_INIT(inode_init_security, mp4_inode_init_security),
+	LSM_HOOK_INIT(inode_init_security, mp4_inode_init_security),
 	LSM_HOOK_INIT(inode_permission, mp4_inode_permission),
 
 	/*
